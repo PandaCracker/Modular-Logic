@@ -17,9 +17,11 @@ public class Connection {
 
     public Connection(Component sourceComponent, int sourcePort, Component destComponent, int destPort) {
         this.sourceComponent = sourceComponent;
+        // At some point add check that the port number actually exists
         this.sourcePort = sourcePort;
 
         this.destComponent = destComponent;
+        // Same check here
         this.destPort = destPort;
 
         this.on = false;
@@ -30,4 +32,6 @@ public class Connection {
     public Component getDestComponent() {return destComponent;}
     public int getDestPort() {return destPort;}
     public boolean getState() {return on;}
+
+    public void setState(boolean state) {this.on = state;}
 }

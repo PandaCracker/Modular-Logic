@@ -1,24 +1,18 @@
 package base;
 
-/**
- * A basic representation of any object which sits on the simulation board
- * and performs logical operations
- * 
- * @author Lucas Peterson
- */
 public abstract class Component {
     /* Where the component is placed on the board */
-    private Coord coords;
+    protected Coord coords;
     /* How large the component is on the board */
-    private Coord size;
+    protected Coord size;
 
     // Input signal fields
-    private int numInputs;
-    private Connection inputConnections[] = new Connection[numInputs];
-    
+    protected int numInputs;
+    protected Connection[] inputConnections;
+
     // Output signal fields
-    private int numOutputs;
-    private Connection outputConnections[] = new Connection[numOutputs];
+    protected int numOutputs;
+    protected Connection[] outputConnections;
 
     // Getters for important fields
     public Coord getCoords() {return coords;}
@@ -27,34 +21,22 @@ public abstract class Component {
     public int getNumOutputs() {return numOutputs;}
 
     /**
-     * Add a component to this one as an input through an already created Connection object
-     * @param connection The Connection object which connects the two desired components
+     * Adds a Connection to this Component as an input
+     * @param connection The already created Connection with this Component as a destination
      */
-    public void addAsInput(Connection connection) {
-        if (inputConnections[connection.getDestPort()] == null) {
-            inputConnections[connection.getDestPort()] = connection;
-        } else {
-            System.out.println("Port " + connection.getDestPort() + " already in use on " + this);
-        }
+    public void addInputConnection(Connection connection) {
+        this.inputConnections[connection.getDestPort()] = connection;
     }
 
     /**
-     * Create a new Connection from this component to another
+     * Create a new Connection from this Component to another
      * @param outputPort The port number the output signal will come from
      * @param destComponent The component the signal is going to
-     * @param destPort The port number the output signal will go to on the destComponent
+     * @param destPort The port number the output signal will go to on the destination Component
      */
-    public void addOutput(int outputPort, Component destComponent, int destPort) {
-        if (outputConnections[outputPort] == null) {
-            Connection connection = new Connection(this, outputPort, destComponent, outputPort);
-            outputConnections[outputPort] = connection;
-            addAsInput(connection);
-        }
+    public void connect(int outputPort, LogicalComponent destComponent, int destPort) {
+        Connection connection = new Connection(this, outputPort, destComponent, destPort);
+        this.outputConnections[outputPort] = connection;
+        destComponent.addInputConnection(connection);
     }
-
-    /**
-     * A method which will perform whatever operation this component does,
-     * then send the resulting signals to connected outputs
-     */
-    public abstract void runInputs();
 }
