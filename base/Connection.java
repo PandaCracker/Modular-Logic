@@ -33,5 +33,8 @@ public class Connection {
     public int getDestPort() {return destPort;}
     public boolean getState() {return on;}
 
-    public void setState(boolean state) {this.on = state;}
+    public void setState(boolean state) {
+        this.on = state;
+        destComponent.update();
+    }
 }

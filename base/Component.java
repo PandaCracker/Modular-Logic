@@ -1,10 +1,13 @@
 package base;
 
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+
 public abstract class Component {
-    /* Where the component is placed on the board */
-    protected Coord coords;
-    /* How large the component is on the board */
-    protected Coord size;
+    // Rectangle object which holds location and size info
+    protected Rectangle rect;
+    // The color of the component on the sim board
+    protected Color color;
 
     // Input signal fields
     protected int numInputs;
@@ -15,10 +18,17 @@ public abstract class Component {
     protected Connection[] outputConnections;
 
     // Getters for important fields
-    public Coord getCoords() {return coords;}
-    public Coord getSize() {return size;}
+    public Rectangle getRect() {return rect;}
+    public Color getColor() {return color;}
     public int getNumInputs() {return numInputs;}
     public int getNumOutputs() {return numOutputs;}
+
+    public Connection getInputConnection(int inPort) {
+        return inputConnections[inPort];
+    }
+    public Connection getOutputConnection(int outPort) {
+        return outputConnections[outPort];
+    }
 
     /**
      * Adds a Connection to this Component as an input
@@ -34,9 +44,11 @@ public abstract class Component {
      * @param destComponent The component the signal is going to
      * @param destPort The port number the output signal will go to on the destination Component
      */
-    public void connect(int outputPort, LogicalComponent destComponent, int destPort) {
+    public void connect(int outputPort, Component destComponent, int destPort) {
         Connection connection = new Connection(this, outputPort, destComponent, destPort);
         this.outputConnections[outputPort] = connection;
         destComponent.addInputConnection(connection);
     }
+
+    public abstract void update();
 }

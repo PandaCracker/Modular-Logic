@@ -2,18 +2,18 @@ package base;
 
 import javafx.scene.shape.Rectangle;
 
-public class SignalSource extends Component {
+public class Light extends Component {
 
     private final static int WIDTH = Simulation.CELL_SIZE;
     private final static int HEIGHT = Simulation.CELL_SIZE;
 
     private boolean on;
 
-    public SignalSource() {
+    public Light() {
         this.rect = new Rectangle(WIDTH, HEIGHT);
 
-        this.numInputs = 0;
-        this.numOutputs = 1;
+        this.numInputs = 1;
+        this.numOutputs = 0;
 
         this.inputConnections = new Connection[numInputs];
         this.outputConnections = new Connection[numOutputs];
@@ -23,13 +23,8 @@ public class SignalSource extends Component {
 
     public boolean isOn() {return on;}
 
-    public void toggle() {
-        on ^= true;
-        outputConnections[0].setState(on);
-    }
-
     @Override
     public void update() {
-        outputConnections[0].setState(on);
+        on = inputConnections[0].getState();
     }
 }

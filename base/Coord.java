@@ -4,6 +4,6 @@ package base;
  * 
  * @author Lucas Peterson
  */
-public record Coord(int row, int col) {
+public record Coord(int x, int y) {
     
 }

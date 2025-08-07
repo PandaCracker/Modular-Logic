@@ -1,10 +1,14 @@
 package base;
 
-public class OR extends LogicalComponent {
+import javafx.scene.shape.Rectangle;
 
-    public OR(Coord coords) {
-        this.coords = coords;
-        this.size = new Coord(2, 3);
+public class OR extends Component {
+
+    private final static int WIDTH = 2 * Simulation.CELL_SIZE;
+    private final static int HEIGHT = 3 * Simulation.CELL_SIZE;
+
+    public OR() {
+        this.rect = new Rectangle(WIDTH, HEIGHT);
 
         this.numInputs = 2;
         this.numOutputs = 1;
@@ -14,7 +18,7 @@ public class OR extends LogicalComponent {
     }
 
     @Override
-    public void runInputs() {
+    public void update() {
         outputConnections[0].setState(inputConnections[0].getState() || inputConnections[1].getState());
     }
 }
