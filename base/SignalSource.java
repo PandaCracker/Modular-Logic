@@ -1,16 +1,19 @@
 package base;
 
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class SignalSource extends Component {
 
-    private final static int WIDTH = Simulation.CELL_SIZE;
-    private final static int HEIGHT = Simulation.CELL_SIZE;
+    private final static int WIDTH = 1;
+    private final static int HEIGHT = 1;
+    private final static String COLOR_STRING = "grey";
 
     private boolean on;
 
     public SignalSource() {
-        this.rect = new Rectangle(WIDTH, HEIGHT);
+        this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
+        rect.setFill(Paint.valueOf(COLOR_STRING));
 
         this.numInputs = 0;
         this.numOutputs = 1;

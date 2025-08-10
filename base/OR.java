@@ -1,14 +1,17 @@
 package base;
 
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
 public class OR extends Component {
 
-    private final static int WIDTH = 2 * Simulation.CELL_SIZE;
-    private final static int HEIGHT = 3 * Simulation.CELL_SIZE;
+    private final static int WIDTH = 2;
+    private final static int HEIGHT = 3;
+    private final static String COLOR_STRING = "blue";
 
     public OR() {
-        this.rect = new Rectangle(WIDTH, HEIGHT);
+        this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
+        rect.setFill(Paint.valueOf(COLOR_STRING));
 
         this.numInputs = 2;
         this.numOutputs = 1;
