@@ -1,17 +1,17 @@
 package base;
 
-import javafx.scene.paint.Paint;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class AND extends Component {
 
     private final static int WIDTH = 2;
     private final static int HEIGHT = 3;
-    private final static String COLOR_STRING = "red";
+    private final static Color COLOR = Color.RED;
 
     public AND() {
         this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
-        rect.setFill(Paint.valueOf(COLOR_STRING));
+        this.color = COLOR;
 
         this.numInputs = 2;
         this.numOutputs = 1;

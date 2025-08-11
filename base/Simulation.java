@@ -2,9 +2,8 @@ package base;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Paint;
+import javafx.scene.canvas.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
@@ -19,11 +18,13 @@ public class Simulation extends Application {
     private Coord boardSize;
     private boolean[][] boardFilled;
     private ArrayList<Component> components;
+    private ArrayList<Connection> connections;
 
     public Simulation() {
         this.boardSize = new Coord(INIT_BOARD_WIDTH, INIT_BOARD_HEIGHT);
         this.boardFilled = new boolean[boardSize.x()][boardSize.y()];
         this.components = new ArrayList<>();
+        this.connections = new ArrayList<>();
     }
 
     public void addComponentAt(Component component, Coord coords) {
@@ -32,19 +33,16 @@ public class Simulation extends Application {
         this.components.add(component);
     }
 
-    public void placeRect(GridPane gp, Rectangle rect) {
-        gp.add(rect, (int)rect.getX(), (int)rect.getY(), (int)rect.getWidth(), (int)rect.getHeight());
+    public void drawComponent(GraphicsContext gc, Component component) {
+        Rectangle rect = component.getRect();
+        gc.setFill(component.getColor());
+        gc.fillRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
     }
 
-    public GridPane makeBackgroundGrid() {
-        GridPane grid = new GridPane();
-        for (int i = 0; i < INIT_BOARD_HEIGHT; i++) {
-            for (int j = 0; j < INIT_BOARD_WIDTH; j++) {
-                Rectangle filler = new Rectangle(CELL_SIZE, CELL_SIZE);
-                grid.add(filler, j, i);
-            }
-        }
-        return grid;
+    public void drawConnection(GraphicsContext gc, Connection connection) {
+        Rectangle src = connection.getSourceComponent().getRect();
+        Rectangle dst = connection.getDestComponent().getRect();
+        gc.strokeLine(src.getX(), src.getY(), dst.getX(), dst.getY());
     }
 
     @Override
@@ -58,26 +56,22 @@ public class Simulation extends Application {
         Light l1 = new Light();
         this.addComponentAt(l1, new Coord(7, 6));
 
-        src1.connect(0, and1, 0);
-        src2.connect(0, and1, 1);
-
-        and1.connect(0, l1, 0);
+        connections.addAll(List.of(
+                src1.connect(0, and1, 0),
+                src2.connect(0, and1, 1),
+                and1.connect(0, l1, 0)));
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        GridPane backgroundGrid = makeBackgroundGrid();
-        GridPane componentGrid = new GridPane();
+        Canvas canvas = new Canvas(INIT_BOARD_WIDTH * CELL_SIZE, INIT_BOARD_HEIGHT * CELL_SIZE);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        ArrayList<Rectangle> rectangles = new ArrayList<>();
-        for (Component component : this.components) {
-            rectangles.add(component.rect);
-        }
+        components.forEach(component -> drawComponent(gc, component));
+        connections.forEach(connection -> drawConnection(gc, connection));
 
-        rectangles.forEach(r -> placeRect(componentGrid, r));
-
-        StackPane stack = new StackPane(backgroundGrid, componentGrid);
-        Scene scene = new Scene(stack);
+        BorderPane window = new BorderPane(canvas);
+        Scene scene = new Scene(window);
         primaryStage.setScene(scene);
         primaryStage.show();
     }

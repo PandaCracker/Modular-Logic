@@ -43,11 +43,13 @@ public abstract class Component {
      * @param outputPort The port number the output signal will come from
      * @param destComponent The component the signal is going to
      * @param destPort The port number the output signal will go to on the destination Component
+     * @return The Connection created
      */
-    public void connect(int outputPort, Component destComponent, int destPort) {
+    public Connection connect(int outputPort, Component destComponent, int destPort) {
         Connection connection = new Connection(this, outputPort, destComponent, destPort);
         this.outputConnections[outputPort] = connection;
         destComponent.addInputConnection(connection);
+        return connection;
     }
 
     public abstract void update();
