@@ -1,5 +1,7 @@
 package base;
 
+import javafx.scene.canvas.GraphicsContext;
+
 /**
  * A basic representation of an object on the board which carries
  * a signal from one component output to another input
@@ -7,34 +9,26 @@ package base;
  * @author Lucas Peterson
  */
 public class Connection {
-    private Component sourceComponent;
-    private int sourcePort;
-    
-    private Component destComponent;
-    private int destPort;
+    private final Port sourcePort;
+    private final Port destPort;
 
     private boolean on;
 
-    public Connection(Component sourceComponent, int sourcePort, Component destComponent, int destPort) {
-        this.sourceComponent = sourceComponent;
-        // At some point add check that the port number actually exists
+    public Connection(Port sourcePort, Port destPort) {
         this.sourcePort = sourcePort;
-
-        this.destComponent = destComponent;
-        // Same check here
         this.destPort = destPort;
 
         this.on = false;
     }
 
-    public Component getSourceComponent() {return sourceComponent;}
-    public int getSourcePort() {return sourcePort;}
-    public Component getDestComponent() {return destComponent;}
-    public int getDestPort() {return destPort;}
-    public boolean getState() {return on;}
+    public boolean isOn() {return on;}
 
     public void setState(boolean state) {
         this.on = state;
-        destComponent.update();
+    }
+
+    public void draw(GraphicsContext gc) {
+        gc.strokeLine(sourcePort.getCenterX(), sourcePort.getCenterY(),
+                destPort.getCenterX(), destPort.getCenterY());
     }
 }

@@ -1,7 +1,6 @@
 package base;
 
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 public class SignalSource extends Component {
 
@@ -11,15 +10,8 @@ public class SignalSource extends Component {
 
     private boolean on;
 
-    public SignalSource() {
-        this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
-        this.color = COLOR;
-
-        this.numInputs = 0;
-        this.numOutputs = 1;
-
-        this.inputConnections = new Connection[numInputs];
-        this.outputConnections = new Connection[numOutputs];
+    public SignalSource(int x, int y) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 0, 1);
 
         this.on = false;
     }
@@ -28,11 +20,10 @@ public class SignalSource extends Component {
 
     public void toggle() {
         on ^= true;
-        outputConnections[0].setState(on);
+        this.getOutputPort(0).setState(on);
     }
 
     @Override
     public void update() {
-        outputConnections[0].setState(on);
     }
 }

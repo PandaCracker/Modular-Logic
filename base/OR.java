@@ -1,7 +1,6 @@
 package base;
 
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 public class OR extends Component {
 
@@ -9,19 +8,12 @@ public class OR extends Component {
     private final static int HEIGHT = 3;
     private final static Color COLOR = Color.BLUE;
 
-    public OR() {
-        this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
-        this.color = COLOR;
-
-        this.numInputs = 2;
-        this.numOutputs = 1;
-
-        this.inputConnections = new Connection[numInputs];
-        this.outputConnections = new Connection[numOutputs];
+    public OR(int x, int y) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 2, 1);
     }
 
     @Override
     public void update() {
-        outputConnections[0].setState(inputConnections[0].getState() || inputConnections[1].getState());
+
     }
 }

@@ -1,7 +1,6 @@
 package base;
 
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 
 public class Light extends Component {
 
@@ -11,15 +10,8 @@ public class Light extends Component {
 
     private boolean on;
 
-    public Light() {
-        this.rect = new Rectangle(WIDTH * Simulation.CELL_SIZE, HEIGHT * Simulation.CELL_SIZE);
-        this.color = COLOR;
-
-        this.numInputs = 1;
-        this.numOutputs = 0;
-
-        this.inputConnections = new Connection[numInputs];
-        this.outputConnections = new Connection[numOutputs];
+    public Light(int x, int y) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 1, 0);
 
         this.on = false;
     }
@@ -28,6 +20,6 @@ public class Light extends Component {
 
     @Override
     public void update() {
-        on = inputConnections[0].getState();
+
     }
 }
