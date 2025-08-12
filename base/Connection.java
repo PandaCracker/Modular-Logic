@@ -1,6 +1,5 @@
 package base;
 
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
@@ -16,8 +15,6 @@ public class Connection {
 
     private final Line line;
 
-    private boolean on;
-
     public Connection(Port sourcePort, Port destPort) {
         this.sourcePort = sourcePort;
         this.destPort = destPort;
@@ -27,15 +24,14 @@ public class Connection {
 
         this.line = new Line(srcCirc.getCenterX(), srcCirc.getCenterY(),
                 dstCirc.getCenterX(), dstCirc.getCenterY());
-
-        this.on = false;
     }
 
     public Line getLine() {return line;}
 
-    public boolean isOn() {return on;}
-
-    public void setState(boolean state) {
-        this.on = state;
+    public void updatePosition() {
+        line.setStartX(sourcePort.getCircle().getCenterX());
+        line.setStartY(sourcePort.getCircle().getCenterY());
+        line.setEndX(destPort.getCircle().getCenterX());
+        line.setEndY(destPort.getCircle().getCenterY());
     }
 }

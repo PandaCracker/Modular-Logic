@@ -13,11 +13,6 @@ public class OR extends Component {
     }
 
     @Override
-    public void update() {
-
-    }
-
-    @Override
     public String toString() {
         return "OR " + super.toString();
     }
