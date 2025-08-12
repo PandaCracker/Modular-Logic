@@ -1,6 +1,7 @@
 package base;
 
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -80,6 +81,16 @@ public class Component {
         }
     }
 
+    public void moveComponent(double sceneX, double sceneY) {
+        rect.setX(sceneX);
+        rect.setY(sceneY);
+    }
+
     public void update() {
+    }
+
+    @Override
+    public String toString() {
+        return "Component at " + rect.getX() + ", " + rect.getY();
     }
 }

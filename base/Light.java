@@ -22,4 +22,9 @@ public class Light extends Component {
     public void update() {
 
     }
+
+    @Override
+    public String toString() {
+        return "Light " + super.toString();
+    }
 }

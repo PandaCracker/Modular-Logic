@@ -16,4 +16,9 @@ public class AND extends Component {
     public void update() {
 
     }
+
+    @Override
+    public String toString() {
+        return "AND " + super.toString();
+    }
 }

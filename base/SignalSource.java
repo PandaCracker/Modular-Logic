@@ -26,4 +26,9 @@ public class SignalSource extends Component {
     @Override
     public void update() {
     }
+
+    @Override
+    public String toString() {
+        return "Signal Source " + super.toString();
+    }
 }
