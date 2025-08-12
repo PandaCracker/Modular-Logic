@@ -2,9 +2,12 @@ package base;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 
 public class Port {
     public enum PortType {INPUT, OUTPUT}
+
+    private final Circle circle;
     public double RADIUS = Simulation.CELL_SIZE / 2;
 
     private final Color COLOR = Color.SLATEGRAY;
@@ -12,11 +15,6 @@ public class Port {
     private final Component parent;
     private final PortType type;
     private Connection connection;
-
-    private final double centerYOffset;
-    private double centerY;
-    private final double centerXOffset;
-    private double centerX;
 
     private boolean on;
 
@@ -28,16 +26,19 @@ public class Port {
 
         int numPorts = type == PortType.INPUT ? parent.getNumInputs() : parent.getNumOutputs();
         double percentDownOnComponent = (double) (portNum + 1) / (numPorts + 1);
-        this.centerYOffset = (int) (parent.getRect().getHeight() * percentDownOnComponent);
-        this.centerY = parent.getRect().getY() + centerYOffset;
+        double centerYOffset = (int) (parent.getRect().getHeight() * percentDownOnComponent);
+        double centerY = parent.getRect().getY() + centerYOffset;
 
-        this.centerXOffset = type == PortType.INPUT ? 0 : (int) parent.getRect().getWidth();
-        this.centerX = parent.getRect().getX() + centerXOffset;
+        double centerXOffset = type == PortType.INPUT ? 0 : (int) parent.getRect().getWidth();
+        double centerX = parent.getRect().getX() + centerXOffset;
+
+        this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
     }
 
-    public double getCenterX() {return centerX;}
-    public double getCenterY() {return centerY;}
+    public Circle getCircle() { return circle; }
+    public Connection getConnection() { return connection; }
     public boolean isOn() { return connection.isOn(); }
+    public boolean isConnected() { return !(connection == null); }
 
     public void connectTo(Port other) {
         connection = new Connection(this, other);
@@ -47,18 +48,4 @@ public class Port {
         connection.setState(state);
     }
 
-    private void updateCoords() {
-        centerY = parent.getRect().getY() + centerYOffset;
-        centerX = parent.getRect().getX() + centerXOffset;
-    }
-
-    public void draw(GraphicsContext gc) {
-        if (type == PortType.OUTPUT) {
-            connection.draw(gc);
-        }
-
-        updateCoords();
-        gc.setFill(COLOR);
-        gc.fillOval(centerX - RADIUS / 2, centerY - RADIUS / 2, RADIUS, RADIUS);
-    }
 }

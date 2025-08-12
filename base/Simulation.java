@@ -1,17 +1,20 @@
 package base;
 
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Application;
-import javafx.scene.Scene;
+import javafx.animation.*;
+import javafx.scene.Node;
 import javafx.scene.canvas.*;
+import javafx.application.Application;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
+import javafx.scene.shape.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Simulation extends Application {
     public final static double CELL_SIZE = 40.0;
@@ -56,37 +59,40 @@ public class Simulation extends Application {
         and1.connect(0, l1, 0);
     }
 
-    private void draw(GraphicsContext gc) {
-        gc.setFill(Color.PINK);
-        gc.fill();
-        gc.fillRect(0, 0, boardWidth, boardHeight);
-        for (Component component : components) {
-            component.draw(gc);
-        }
-    }
-
     private void update() {
 
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Canvas canvas = new Canvas(boardWidth * CELL_SIZE, boardHeight * CELL_SIZE);
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Pane root = new Pane();
+        root.setPrefWidth(boardWidth * CELL_SIZE);
+        root.setPrefHeight(boardHeight * CELL_SIZE);
         InputHandler ih = new InputHandler(components);
 
-        canvas.setOnDragDetected(ih::dragStart);
-        canvas.setOnMouseReleased(ih::mouseRelease);
+        for (Component component : components) {
+            List<Node> children = root.getChildren();
+            children.add(component.getRect());
+            children.addAll(Arrays.stream(component.getInputPorts()).map(Port::getCircle).toList());
+            for (Port outPort : component.getOutputPorts()) {
+                children.add(outPort.getCircle());
+                if (outPort.isConnected()) {
+                    children.add(outPort.getConnection().getLine());
+                }
+            }
+
+            component.getRect().setOnDragDetected(ih::dragStart);
+            component.getRect().setOnMouseReleased(ih::mouseRelease);
+        }
 
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.millis(333), e -> {
                         update();
-                        draw(gc);
                     }));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 
-        BorderPane window = new BorderPane(canvas);
+        BorderPane window = new BorderPane(root);
         Scene scene = new Scene(window);
         primaryStage.setScene(scene);
         primaryStage.show();

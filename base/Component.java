@@ -1,15 +1,11 @@
 package base;
 
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 public class Component {
-    // Rectangle object which holds location and size info
-    private Rectangle rect;
-    // The color of the component on the sim board
-    private final Color color;
+    // Rectangle object which holds all display and location info
+    private final Rectangle rect;
 
     // Input signal fields
     private final int numInputs;
@@ -23,8 +19,7 @@ public class Component {
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
         rect.setY(y * Simulation.CELL_SIZE);
-
-        this.color = color;
+        rect.setFill(color);
 
         this.numInputs = numInputs;
         this.numOutputs = numOutputs;
@@ -42,7 +37,6 @@ public class Component {
 
     // Getters for important fields
     public Rectangle getRect() {return rect;}
-    public Color getColor() {return color;}
 
     public int getNumInputs() {return numInputs;}
     public Port[] getInputPorts() {return inputPorts;}
@@ -64,21 +58,6 @@ public class Component {
      */
     public void connect(int outputPortNum, Component destComponent, int destPortNum) {
         outputPorts[outputPortNum].connectTo(destComponent.getInputPort(destPortNum));
-    }
-
-    public void draw(GraphicsContext gc) {
-        gc.setFill(color);
-        gc.fillRect(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-        drawPorts(gc);
-    }
-
-    public void drawPorts(GraphicsContext gc) {
-        for (Port inPort : inputPorts) {
-            inPort.draw(gc);
-        }
-        for (Port outPort : outputPorts) {
-            outPort.draw(gc);
-        }
     }
 
     public void moveComponent(double sceneX, double sceneY) {
