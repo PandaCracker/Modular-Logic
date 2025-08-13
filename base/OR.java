@@ -2,16 +2,38 @@ package base;
 
 import javafx.scene.paint.Color;
 
+/**
+ * A Component which outputs the logical or of two inputs
+ *
+ * @author Lucas Peterson
+ */
 public class OR extends Component {
 
+    /** The width of an OR Component */
     private final static int WIDTH = 2;
+    /** The height of an OR Component */
     private final static int HEIGHT = 3;
+    /** The color of every OR Component */
     private final static Color COLOR = Color.BLUE;
 
+    /**
+     * Create a new OR Component
+     * @param x The x coordinate (in cells) of the new OR
+     * @param y The y coordinate (in cells) of the new OR
+     */
     public OR(int x, int y) {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1);
     }
 
+    /**
+     * Produces a String representation of this OR
+     * Gives a String of the form:
+     * <p>
+     *     OR Component at [X], [Y]
+     * </p>
+     * Where X and Y are the pixel coordinates of this OR
+     * @return The String described above
+     */
     @Override
     public String toString() {
         return "OR " + super.toString();

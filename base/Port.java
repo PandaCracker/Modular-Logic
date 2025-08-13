@@ -103,7 +103,7 @@ public class Port {
     }
 
     /**
-     * Update the position of this Port's Circle to match any movements made by the parent Component's Rectangle.
+     * Update the position of this Port's Circle to match any movements made by the parent Component's Rectangle. <br>
      * Should be called whenever the parent Component moves
      */
     public void updatePosition() {
