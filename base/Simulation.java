@@ -1,5 +1,6 @@
 package base;
 
+import base.events.AddChildEvent;
 import base.events.DeleteChildEvent;
 import base.fundamentals.*;
 import javafx.animation.*;
@@ -57,10 +58,15 @@ public class Simulation extends Application {
         this.components.add(component);
     }
 
-    private void deleteNode(List<Node> childrenList, DeleteChildEvent deleteEvent) {
+    private void deleteChild(List<Node> childrenList, DeleteChildEvent deleteEvent) {
         System.out.println("Child to remove: " + deleteEvent.getChildToRemove());
         String problemChildID = deleteEvent.getChildToRemove().getId();
         childrenList.removeIf(n -> n.getId().equals(problemChildID));
+    }
+
+    private void addChild(List<Node> childrenList, AddChildEvent addEvent) {
+        System.out.println("Child to add: " + addEvent.getChildToAdd());
+        childrenList.add(addEvent.getChildToAdd());
     }
 
     /**
@@ -134,7 +140,9 @@ public class Simulation extends Application {
             children.addAll(Arrays.stream(component.getInputPorts()).map(Port::getCircle).toList());
         }
 
-        root.addEventHandler(DeleteChildEvent.EVENT_TYPE, e -> deleteNode(children, e));
+        root.addEventHandler(DeleteChildEvent.EVENT_TYPE, e -> deleteChild(children, e));
+
+        root.addEventHandler(AddChildEvent.EVENT_TYPE, e -> addChild(children, e));
 
         Timeline timeline = new Timeline( new KeyFrame(
                 Duration.millis(FRAME_DELAY_MS),

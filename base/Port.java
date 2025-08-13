@@ -2,8 +2,10 @@ package base;
 
 import base.events.DeleteChildEvent;
 import javafx.event.Event;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.shape.Shape;
 
 /**
  * Represents one I/O point on a Component
@@ -37,6 +39,8 @@ public class Port {
     /** Whether this Port is carrying a signal */
     private boolean on;
 
+    private boolean inDrag;
+
     /**
      * Creates a new Port
      * @param parent The Component this Port is a part of
@@ -61,8 +65,49 @@ public class Port {
         double centerX = parent.getRect().getX() + centerXOffsetFromParent;
         this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
         circle.setId(String.valueOf(ID));
+        circle.setUserData(this);
+
+        circle.setOnMousePressed(me -> {
+            if (me.getButton() == MouseButton.SECONDARY) {
+                removeConnection();
+            }
+        });
+
+        circle.setOnDragDetected(me -> {
+            if (me.getButton() == MouseButton.PRIMARY) {
+                circle.startFullDrag();
+                inDrag = true;
+                removeConnection();
+                connection = new Connection(this);
+            }
+        });
+
+        circle.setOnMouseReleased(me -> {
+            if (me.getButton() == MouseButton.PRIMARY && inDrag) {
+                inDrag = false;
+                if (!connection.isComplete()) {
+                    removeConnection();
+                }
+            }
+        });
+
+        circle.setOnMouseDragged(me -> {
+            if (me.getButton() == MouseButton.PRIMARY && connection != null) {
+                connection.updateDrag(me);
+            }
+        });
+
+        circle.setOnMouseDragReleased(mde -> {
+            if (connection == null) {
+                Shape otherShape = (Shape) mde.getGestureSource();
+                Port otherPort = (Port) otherShape.getUserData();
+                connection = otherPort.getConnection();
+                connection.registerPort(this);
+            }
+        });
 
         this.on = false;
+        this.inDrag = false;
     }
 
     /**
@@ -71,6 +116,14 @@ public class Port {
      */
     public Circle getCircle() {
         return circle;
+    }
+
+    /**
+     * Get the type of this Port, either PortType.INPUT or PortType.OUTPUT
+     * @return This Port's Type
+     */
+    public PortType getType() {
+        return type;
     }
 
     /**
@@ -155,7 +208,9 @@ public class Port {
      * Remove the Connection attached to this Port from the board and all use
      */
     public void removeConnection() {
-        connection.remove();
+        if (connection != null) {
+            connection.remove();
+        }
     }
 
     /**
