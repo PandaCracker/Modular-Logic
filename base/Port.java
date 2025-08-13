@@ -22,6 +22,8 @@ public class Port {
 
     /** The Component this Port is a part of */
     private final Component parent;
+    /** Which type of Port this is */
+    private final PortType type;
     /** The Connection, if any, this Port has */
     private Connection connection;
 
@@ -29,6 +31,9 @@ public class Port {
     private final double centerXOffsetFromParent;
     /** How far, in pixels, the center of the Port is from the top right corner of its Parent in the Y direction */
     private final double centerYOffsetFromParent;
+
+    /** Whether this Port is carrying a signal */
+    private boolean on;
 
     /**
      * Creates a new Port
@@ -39,6 +44,7 @@ public class Port {
     public Port(Component parent, PortType type, int portNum) {
         // TODO Some sort of system ensuring that portNums aren't reused/actually exist on the parent Component
         this.parent = parent;
+        this.type = type;
         this.connection = null;
 
         // Get the constant offsets from the parent's corners
@@ -52,6 +58,8 @@ public class Port {
         double centerY = parent.getRect().getY() + centerYOffsetFromParent;
         double centerX = parent.getRect().getX() + centerXOffsetFromParent;
         this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
+
+        this.on = false;
     }
 
     /**
@@ -75,11 +83,30 @@ public class Port {
      * @return Whether this Port is connected to another Port
      */
     public boolean isConnected() {
-        return !(connection == null);
+        return connection != null;
+    }
+
+    /**
+     * Get whether this Port is carrying a signal
+     */
+    public boolean isOn() {
+        return on;
+    }
+
+    /**
+     * Set the state of this Port to be on (true) or off (false)
+     *
+     * @param state The desired state of this Port
+     */
+    public void setState(boolean state) {
+        on = state;
+        if (isConnected() && type == PortType.OUTPUT) {
+            connection.updateState();
+        }
     }
 
     // TODO clean up this connection mess. No wacky functions,
-    //  and make sure the type of port matches the role its supposed to play
+    //  and make sure the type of port matches the role its supposed to play. Enforce w/ separate classes?
 
     /**
      * Helper function (read: hack) for the connection process between two Ports

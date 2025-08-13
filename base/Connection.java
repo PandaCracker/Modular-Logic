@@ -1,5 +1,6 @@
 package base;
 
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 
@@ -10,6 +11,12 @@ import javafx.scene.shape.Line;
  * @author Lucas Peterson
  */
 public class Connection {
+    /** The Color of a Connection Line when it is on */
+    private final static Color ON_COLOR = Color.GREEN;
+    /** The Color of a Connection Line when it is off */
+    private final static Color OFF_COLOR = Color.BLACK;
+    private final static double LINE_WIDTH = 3.0;
+
     /** The Port the signal comes from */
     private final Port sourcePort;
     /** The Port the signal is going to */
@@ -17,6 +24,9 @@ public class Connection {
 
     /** The Line which represents the Connection */
     private final Line line;
+
+    /** Whether this Connection is carrying a signal */
+    private boolean on;
 
     /**
      * Create a new Connection between two Ports
@@ -32,6 +42,9 @@ public class Connection {
 
         this.line = new Line(srcCirc.getCenterX(), srcCirc.getCenterY(),
                 dstCirc.getCenterX(), dstCirc.getCenterY());
+        line.setStrokeWidth(LINE_WIDTH);
+
+        this.on = false;
     }
 
     /**
@@ -40,6 +53,23 @@ public class Connection {
      */
     public Line getLine() {
         return line;
+    }
+
+    /**
+     * Get whether the Connection is on
+     * @return Whether the Connection is on
+     */
+    public boolean isOn() {
+        return on;
+    }
+
+    /**
+     * Update the state of this Connection to match the source Port
+     */
+    public void updateState() {
+        on = sourcePort.isOn();
+        line.setStroke(on ? ON_COLOR : OFF_COLOR);
+        destPort.setState(on);
     }
 
     /**

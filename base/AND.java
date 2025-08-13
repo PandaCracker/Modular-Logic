@@ -25,6 +25,13 @@ public class AND extends Component {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1);
     }
 
+    @Override
+    public void update() {
+        boolean in1 = getInputPort(0).isOn();
+        boolean in2 = getInputPort(1).isOn();
+        getOutputPort(0).setState(in1 && in2);
+    }
+
     /**
      * Produces a String representation of this AND
      * Gives a String of the form:

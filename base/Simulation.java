@@ -1,5 +1,6 @@
 package base;
 
+import javafx.animation.*;
 import javafx.scene.Node;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -7,6 +8,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.*;
 
@@ -25,6 +27,8 @@ public class Simulation extends Application {
     public final static int INIT_BOARD_WIDTH = 15;
     /** Number of cells tall the board is at the start of the simulation */
     public final static int INIT_BOARD_HEIGHT = 15;
+    /** Number of milliseconds between each logical update frame */
+    public final static int FRAME_DELAY_MS = 33;
 
     /** Number of cells wide the board currently is */
     private final int boardWidth;
@@ -104,6 +108,12 @@ public class Simulation extends Application {
             }
             children.addAll(Arrays.stream(component.getInputPorts()).map(Port::getCircle).toList());
         }
+
+        Timeline timeline = new Timeline( new KeyFrame(
+                Duration.millis(FRAME_DELAY_MS),
+                e -> components.forEach(Component::update)));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
 
         BorderPane window = new BorderPane(root);
         Scene scene = new Scene(window);

@@ -156,6 +156,14 @@ public abstract class Component {
     }
 
     /**
+     * Get if this component is being dragged
+     * @return Whether this Component is being dragged
+     */
+    public boolean isInDrag() {
+        return inDrag;
+    }
+
+    /**
      * Create a new Connection from one of this Component's Ports to another
      * @param outputPortNum The Port number the output signal will come from
      * @param destComponent The Component the signal is going to
@@ -174,6 +182,15 @@ public abstract class Component {
         rect.setX(sceneX);
         rect.setY(sceneY);
         Arrays.stream(getAllPorts()).forEach(Port::updatePosition);
+    }
+
+    /**
+     * Method which is called once per logic cycle to progress a Component's state.
+     * <br>
+     * Should implement each Component's unique logical functionality
+     */
+    public void update() {
+        System.out.println("bad one got called");;
     }
 
     /**

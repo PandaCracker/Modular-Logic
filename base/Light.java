@@ -13,8 +13,10 @@ public class Light extends Component {
     private final static int WIDTH = 1;
     /** The height of a Light in cells */
     private final static int HEIGHT = 1;
-    /** The color of every Light */
-    private final static Color COLOR = Color.BLACK;
+    /** The Color of an active Light */
+    private final static Color ON_COLOR = Color.YELLOW;
+    /** The Color of an inactive Light */
+    private final static Color OFF_COLOR = Color.BLACK;
 
     /**
      * Create a new Light Component
@@ -22,7 +24,13 @@ public class Light extends Component {
      * @param y The y coordinate (in cells) of the new light
      */
     public Light(int x, int y) {
-        super(x, y, WIDTH, HEIGHT, COLOR, 1, 0);
+        super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0);
+    }
+
+    @Override
+    public void update() {
+        boolean on = getInputPort(0).isOn();
+        getRect().setFill(on ? ON_COLOR : OFF_COLOR);
     }
 
     /**
