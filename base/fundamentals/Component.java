@@ -1,10 +1,14 @@
-package base;
+package base.fundamentals;
 
-import base.events.DeleteChildEvent;
+import base.Simulation;
+import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
+import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 import java.util.Arrays;
 
@@ -16,6 +20,13 @@ import java.util.Arrays;
 public abstract class Component {
     /** Counter which gives each Component and/or Port a unique ID */
     private static int ID_COUNTER = 0;
+
+    /** Font used by all text displayed on Components */
+    private final static Font DEFAULT_FONT = Font.getDefault();
+    /** Text field placed on the center of every Component */
+    private final Text text;
+    /** Distance between the center of the Text's LayoutBounds and its origin for the current Text*/
+    private double halfTextWidth;
 
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
@@ -46,8 +57,11 @@ public abstract class Component {
      * @param color The Color of the Component
      * @param numInputs The number of input Ports the Component will have
      * @param numOutputs The number of output Ports the Component will have
+     * @param defaultText The text String to display on the Component
+     * @param defaultTextColor The default Color of the Component's text
      */
-    public Component(int x, int y, int width, int height, Color color, int numInputs, int numOutputs) {
+    public Component(double x, double y, double width, double height, Color color, int numInputs, int numOutputs,
+                     String defaultText, Color defaultTextColor) {
         // Set up basic Rectangle fields
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
@@ -70,13 +84,23 @@ public abstract class Component {
             outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i, ID_COUNTER);
         }
 
+        // Set up display text
+        this.text = new Text();
+        text.setFont(DEFAULT_FONT);
+        text.setTextOrigin(VPos.CENTER);
+        text.setMouseTransparent(true);
+
+        setTextColor(defaultTextColor);
+        setText(defaultText);
+        centerAlignText();
+
+        // Movement Handlers
         rect.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 remove();
             }
         });
 
-        // Movement Handlers
         rect.setOnDragDetected(e -> {
             inDrag = true;
             dragOffsetX = e.getX() - rect.getX();
@@ -108,6 +132,14 @@ public abstract class Component {
      */
     public Rectangle getRect() {
         return rect;
+    }
+
+    /**
+     * Get the Text object to display on this Component
+     * @return The Text object displayed on this Component
+     */
+    public Text getText() {
+        return text;
     }
 
     /**
@@ -171,21 +203,26 @@ public abstract class Component {
     }
 
     /**
-     * Get if this component is being dragged
-     * @return Whether this Component is being dragged
+     * Set the Text displayed on this Component
+     * @param newText The String to display
      */
-    public boolean isInDrag() {
-        return inDrag;
+    public void setText(String newText) {
+        text.setText(newText);
+        this.halfTextWidth = text.getLayoutBounds().getCenterX() - text.getX();
+        centerAlignText();
     }
 
     /**
-     * Create a new Connection from one of this Component's Ports to another
-     * @param outputPortNum The Port number the output signal will come from
-     * @param destComponent The Component the signal is going to
-     * @param destPortNum The Port number the output signal will go to on the destination Component
+     * Set the Component's Text Color
+     * @param textColor The Color to change the Text Color to
      */
-    public void connect(int outputPortNum, Component destComponent, int destPortNum) {
-        outputPorts[outputPortNum].connectTo(destComponent.getInputPort(destPortNum));
+    public void setTextColor(Color textColor) {
+        text.setFill(textColor);
+    }
+
+    private void centerAlignText() {
+        text.setX(rect.getLayoutBounds().getCenterX() - halfTextWidth);
+        text.setY(rect.getLayoutBounds().getCenterY());
     }
 
     /**
@@ -196,6 +233,7 @@ public abstract class Component {
     public void move(double sceneX, double sceneY) {
         rect.setX(sceneX);
         rect.setY(sceneY);
+        centerAlignText();
         Arrays.stream(getAllPorts()).forEach(Port::updatePosition);
     }
 
@@ -204,7 +242,7 @@ public abstract class Component {
      * Components
      */
     public void remove() {
-        Event.fireEvent(rect.getParent(), new DeleteChildEvent(rect));
+        Event.fireEvent(rect.getParent(), new DeleteChildrenEvent(rect, text));
         for (Port port : getAllPorts()) {
             port.remove();
         }

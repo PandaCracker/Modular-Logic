@@ -1,6 +1,6 @@
-package base.fundamentals;
+package base.components;
 
-import base.Component;
+import base.fundamentals.Component;
 import javafx.scene.paint.Color;
 
 /**
@@ -11,10 +11,10 @@ import javafx.scene.paint.Color;
 public class Splitter extends Component {
 
     /** The width of a Splitter in cells */
-    private final static int WIDTH = 1;
+    private final static double WIDTH = 1;
     /** The height of a Splitter in cells */
-    private final static int HEIGHT = 1;
-    /*8 The color of every Splitter */
+    private final static double HEIGHT = 1.5;
+    /** The color of every Splitter */
     private final static Color COLOR = Color.BLACK;
 
     /**
@@ -22,8 +22,8 @@ public class Splitter extends Component {
      * @param x The x coordinate (in cells) of the new Splitter
      * @param y The y coordinate (in cells) of the new Splitter
      */
-    public Splitter(int x, int y) {
-        super(x, y, WIDTH, HEIGHT, COLOR, 1, 2);
+    public Splitter(double x, double y) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null);
     }
 
     @Override

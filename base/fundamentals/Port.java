@@ -1,6 +1,7 @@
-package base;
+package base.fundamentals;
 
-import base.events.DeleteChildEvent;
+import base.Simulation;
+import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
@@ -17,7 +18,7 @@ public class Port {
     public enum PortType {INPUT, OUTPUT}
 
     /** The radius of every Port, in pixels */
-    public double RADIUS = Simulation.CELL_SIZE / 8;
+    public double RADIUS = Simulation.CELL_SIZE / 6;
     /** The Color of every Port */
     private final Color COLOR = Color.SLATEGRAY;
 
@@ -217,7 +218,7 @@ public class Port {
      * Remove this Port and its Connection from the display
      */
     public void remove() {
-        Event.fireEvent(circle.getParent(), new DeleteChildEvent(circle));
+        Event.fireEvent(circle.getParent(), new DeleteChildrenEvent(circle));
         if (isConnected()) {
             removeConnection();
         }

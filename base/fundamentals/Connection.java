@@ -1,9 +1,8 @@
-package base;
+package base.fundamentals;
 
 import base.events.AddChildEvent;
-import base.events.DeleteChildEvent;
+import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
-import javafx.event.EventDispatchChain;
 import javafx.event.EventTarget;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -159,7 +158,7 @@ public class Connection {
      */
     public void remove() {
         // Remove the connection from the main display Pane
-        Event.fireEvent(line.getParent(), new DeleteChildEvent(line));
+        Event.fireEvent(line.getParent(), new DeleteChildrenEvent(line));
         if(sourcePort != null) {sourcePort.deregisterConnection();}
         if(destPort != null) {destPort.deregisterConnection();}
     }

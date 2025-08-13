@@ -1,8 +1,9 @@
 package base;
 
-import base.events.AddChildEvent;
-import base.events.DeleteChildEvent;
-import base.fundamentals.*;
+import base.components.*;
+import base.events.*;
+import base.fundamentals.Component;
+import base.fundamentals.Port;
 import javafx.animation.*;
 import javafx.scene.Node;
 import javafx.application.Application;
@@ -58,10 +59,8 @@ public class Simulation extends Application {
         this.components.add(component);
     }
 
-    private void deleteChild(List<Node> childrenList, DeleteChildEvent deleteEvent) {
-        System.out.println("Child to remove: " + deleteEvent.getChildToRemove());
-        String problemChildID = deleteEvent.getChildToRemove().getId();
-        childrenList.removeIf(n -> n.getId().equals(problemChildID));
+    private void deleteChild(List<Node> childrenList, DeleteChildrenEvent deleteEvent) {
+        childrenList.removeAll(Arrays.stream(deleteEvent.getChildrenToRemove()).toList());
     }
 
     private void addChild(List<Node> childrenList, AddChildEvent addEvent) {
@@ -97,15 +96,6 @@ public class Simulation extends Application {
 
         Light l2 = new Light(9, 11);
         addComponent(l2);
-
-        src1.connect(0, spl1, 0);
-        src2.connect(0, spl2, 0);
-        spl1.connect(0, and1, 0);
-        spl1.connect(1, or1,0);
-        spl2.connect(0, and1, 1);
-        spl2.connect(1, or1, 1);
-        and1.connect(0, l1, 0);
-        or1.connect(0, l2, 0);
     }
 
     /**
@@ -130,6 +120,7 @@ public class Simulation extends Application {
         for (Component component : components) {
             Rectangle rect = component.getRect();
             children.add(rect);
+            children.add(component.getText());
 
             for (Port outPort : component.getOutputPorts()) {
                 if (outPort.isConnected()) {
@@ -140,7 +131,7 @@ public class Simulation extends Application {
             children.addAll(Arrays.stream(component.getInputPorts()).map(Port::getCircle).toList());
         }
 
-        root.addEventHandler(DeleteChildEvent.EVENT_TYPE, e -> deleteChild(children, e));
+        root.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
 
         root.addEventHandler(AddChildEvent.EVENT_TYPE, e -> addChild(children, e));
 

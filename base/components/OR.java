@@ -1,6 +1,6 @@
-package base.fundamentals;
+package base.components;
 
-import base.Component;
+import base.fundamentals.Component;
 import javafx.scene.paint.Color;
 
 /**
@@ -11,19 +11,23 @@ import javafx.scene.paint.Color;
 public class OR extends Component {
 
     /** The width of an OR Component */
-    private final static int WIDTH = 1;
+    private final static double WIDTH = 1.5;
     /** The height of an OR Component */
-    private final static int HEIGHT = 2;
+    private final static double HEIGHT = 2;
     /** The color of every OR Component */
     private final static Color COLOR = Color.BLUE;
+    /** The String displayed on every OR Component */
+    private final static String TEXT = "OR";
+    /** The Color of the Text displayed on OR Components */
+    private final static Color TEXT_COLOR = Color.WHITE;
 
     /**
      * Create a new OR Component
      * @param x The x coordinate (in cells) of the new OR
      * @param y The y coordinate (in cells) of the new OR
      */
-    public OR(int x, int y) {
-        super(x, y, WIDTH, HEIGHT, COLOR, 2, 1);
+    public OR(double x, double y) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR);
     }
 
     @Override
