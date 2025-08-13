@@ -1,5 +1,7 @@
 package base;
 
+import base.events.DeleteChildEvent;
+import javafx.event.Event;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
@@ -40,9 +42,9 @@ public class Port {
      * @param parent The Component this Port is a part of
      * @param type The type of Port this is, either <i>PortType.INPUT</i> or <i>PortType.OUTPUT</i>
      * @param portNum The (zero-indexed) port number this port will be
+     * @param ID A unique identifier for this port
      */
-    public Port(Component parent, PortType type, int portNum) {
-        // TODO Some sort of system ensuring that portNums aren't reused/actually exist on the parent Component
+    public Port(Component parent, PortType type, int portNum, int ID) {
         this.parent = parent;
         this.type = type;
         this.connection = null;
@@ -58,6 +60,7 @@ public class Port {
         double centerY = parent.getRect().getY() + centerYOffsetFromParent;
         double centerX = parent.getRect().getX() + centerXOffsetFromParent;
         this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
+        circle.setId(String.valueOf(ID));
 
         this.on = false;
     }
@@ -94,6 +97,22 @@ public class Port {
     }
 
     /**
+     * Get whether this Port is an input Port
+     * @return Whether this is an Input Port
+     */
+    public boolean isInput() {
+        return type == PortType.INPUT;
+    }
+
+    /**
+     * Get whether this Port is an output Port
+     * @return Whether this is an output Port
+     */
+    public boolean isOutput() {
+        return type == PortType.OUTPUT;
+    }
+
+    /**
      * Set the state of this Port to be on (true) or off (false)
      *
      * @param state The desired state of this Port
@@ -105,28 +124,48 @@ public class Port {
         }
     }
 
-    // TODO clean up this connection mess. No wacky functions,
-    //  and make sure the type of port matches the role its supposed to play. Enforce w/ separate classes?
-
     /**
-     * Helper function (read: hack) for the connection process between two Ports
-     * <p>
-     * Actually creates the Connection object and ensures both Ports recognize the new Connection
-     * @param source The Port on the source end of this Connection
-     * @return The Connection created
+     * Registers an already made Connection as ending at this Port
+     * @param connection The Connection which is now attached to this Port
      */
-    private Connection _connectTo(Port source) {
-        connection = new Connection(source, this);
-        return connection;
+    private void registerConnection(Connection connection) {
+        this.connection = connection;
     }
 
     /**
-     * Connect this Port to another Port
-     * The Port being called with will be the source
+     * Connect this Port to another Port. <br>
      * @param other The input Port which will receive signals from this Port
      */
     public void connectTo(Port other) {
-        connection = other._connectTo(this);
+        connection = new Connection(this, other);
+        other.registerConnection(connection);
+    }
+
+    /**
+     * Register that this Port's Connection has been removed
+     * Should only be called by the Connection's remove() method
+     * @see Connection#remove
+     */
+    public void deregisterConnection() {
+        on = false;
+        connection = null;
+    }
+
+    /**
+     * Remove the Connection attached to this Port from the board and all use
+     */
+    public void removeConnection() {
+        connection.remove();
+    }
+
+    /**
+     * Remove this Port and its Connection from the display
+     */
+    public void remove() {
+        Event.fireEvent(circle.getParent(), new DeleteChildEvent(circle));
+        if (isConnected()) {
+            removeConnection();
+        }
     }
 
     /**

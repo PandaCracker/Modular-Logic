@@ -1,5 +1,8 @@
 package base;
 
+import base.events.DeleteChildEvent;
+import javafx.event.Event;
+import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -11,6 +14,9 @@ import java.util.Arrays;
  * @author Lucas Peterson
  */
 public abstract class Component {
+    /** Counter which gives each Component and/or Port a unique ID */
+    private static int ID_COUNTER = 0;
+
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
 
@@ -48,6 +54,28 @@ public abstract class Component {
         rect.setY(y * Simulation.CELL_SIZE);
         rect.setFill(color);
 
+        rect.setId(String.valueOf(ID_COUNTER));
+        ID_COUNTER++;
+
+        // Set up I/O Ports
+        this.numInputs = numInputs;
+        this.inputPorts = new Port[numInputs];
+        for (int i = 0; i < numInputs; i++, ID_COUNTER++) {
+            inputPorts[i] = new Port(this, Port.PortType.INPUT, i, ID_COUNTER);
+        }
+
+        this.numOutputs = numOutputs;
+        this.outputPorts = new Port[numOutputs];
+        for (int i = 0; i < numOutputs; i++, ID_COUNTER++) {
+            outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i, ID_COUNTER);
+        }
+
+        rect.setOnMousePressed(e -> {
+            if (e.getButton() == MouseButton.SECONDARY) {
+                remove();
+            }
+        });
+
         // Movement Handlers
         rect.setOnDragDetected(e -> {
             inDrag = true;
@@ -67,19 +95,6 @@ public abstract class Component {
                 inDrag = false;
             }
         });
-
-        // Set up I/O Ports
-        this.numInputs = numInputs;
-        this.inputPorts = new Port[numInputs];
-        for (int i = 0; i < numInputs; i++) {
-            inputPorts[i] = new Port(this, Port.PortType.INPUT, i);
-        }
-
-        this.numOutputs = numOutputs;
-        this.outputPorts = new Port[numOutputs];
-        for (int i = 0; i < numOutputs; i++) {
-            outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i);
-        }
 
         // Init dragging vars
         this.inDrag = false;
@@ -185,13 +200,22 @@ public abstract class Component {
     }
 
     /**
+     * Remove this Component and all children (Ports, Connections) from the display and from any other connected
+     * Components
+     */
+    public void remove() {
+        Event.fireEvent(rect.getParent(), new DeleteChildEvent(rect));
+        for (Port port : getAllPorts()) {
+            port.remove();
+        }
+    }
+
+    /**
      * Method which is called once per logic cycle to progress a Component's state.
      * <br>
      * Should implement each Component's unique logical functionality
      */
-    public void update() {
-        System.out.println("bad one got called");;
-    }
+    public void update() {}
 
     /**
      * Provides a baseline String representation of a Component.

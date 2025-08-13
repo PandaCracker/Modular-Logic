@@ -1,5 +1,7 @@
 package base;
 
+import base.events.DeleteChildEvent;
+import javafx.event.Event;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -11,6 +13,9 @@ import javafx.scene.shape.Line;
  * @author Lucas Peterson
  */
 public class Connection {
+    /** Counter used to give each Connection a unique ID. Starts negative to not interfere with Component/Port IDs */
+    private static int ID_COUNTER = -1;
+
     /** The Color of a Connection Line when it is on */
     private final static Color ON_COLOR = Color.GREEN;
     /** The Color of a Connection Line when it is off */
@@ -43,6 +48,8 @@ public class Connection {
         this.line = new Line(srcCirc.getCenterX(), srcCirc.getCenterY(),
                 dstCirc.getCenterX(), dstCirc.getCenterY());
         line.setStrokeWidth(LINE_WIDTH);
+        line.setId(String.valueOf(ID_COUNTER));
+        ID_COUNTER--;
 
         this.on = false;
     }
@@ -56,11 +63,37 @@ public class Connection {
     }
 
     /**
+     * Get the source Port for this Connection
+     * @return This Connection's source Port
+     */
+    public Port getSourcePort() {
+        return sourcePort;
+    }
+
+    /**
+     * Get the destination Port for this Connection
+     * @return This Connection's destination Port
+     */
+    public Port getDestPort() {
+        return destPort;
+    }
+
+    /**
      * Get whether the Connection is on
      * @return Whether the Connection is on
      */
     public boolean isOn() {
         return on;
+    }
+
+    /**
+     * Remove this Connection from the display and use by its Ports
+     */
+    public void remove() {
+        // Remove the connection from the main display Pane
+        Event.fireEvent(line.getParent(), new DeleteChildEvent(line));
+        sourcePort.deregisterConnection();
+        destPort.deregisterConnection();
     }
 
     /**

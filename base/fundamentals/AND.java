@@ -1,5 +1,6 @@
-package base;
+package base.fundamentals;
 
+import base.Component;
 import javafx.scene.paint.Color;
 
 /**
