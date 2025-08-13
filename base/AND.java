@@ -10,9 +10,9 @@ import javafx.scene.paint.Color;
 public class AND extends Component {
 
     /** The width of an AND Component */
-    private final static int WIDTH = 2;
+    private final static int WIDTH = 1;
     /** The height of an AND Component */
-    private final static int HEIGHT = 3;
+    private final static int HEIGHT = 2;
     /** The color of every AND Component */
     private final static Color COLOR = Color.RED;
 

@@ -63,18 +63,35 @@ public class Simulation extends Application {
         SignalSource src1 = new SignalSource(2, 5);
         addComponent(src1);
 
+        Splitter spl1 = new Splitter(3, 5);
+        addComponent(spl1);
+
         SignalSource src2 = new SignalSource(2, 7);
         addComponent(src2);
+
+        Splitter spl2 = new Splitter(3, 7);
+        addComponent(spl2);
 
         AND and1 = new AND(5, 5);
         addComponent(and1);
 
+        OR or1 = new OR(5, 10);
+        addComponent(or1);
+
         Light l1 = new Light(9, 6);
         addComponent(l1);
 
-        src1.connect(0, and1, 0);
-        src2.connect(0, and1, 1);
+        Light l2 = new Light(9, 11);
+        addComponent(l2);
+
+        src1.connect(0, spl1, 0);
+        src2.connect(0, spl2, 0);
+        spl1.connect(0, and1, 0);
+        spl1.connect(1, or1,0);
+        spl2.connect(0, and1, 1);
+        spl2.connect(1, or1, 1);
         and1.connect(0, l1, 0);
+        or1.connect(0, l2, 0);
     }
 
     /**
@@ -117,6 +134,7 @@ public class Simulation extends Application {
 
         BorderPane window = new BorderPane(root);
         Scene scene = new Scene(window);
+        primaryStage.setTitle("Modular Logic");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

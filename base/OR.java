@@ -10,9 +10,9 @@ import javafx.scene.paint.Color;
 public class OR extends Component {
 
     /** The width of an OR Component */
-    private final static int WIDTH = 2;
+    private final static int WIDTH = 1;
     /** The height of an OR Component */
-    private final static int HEIGHT = 3;
+    private final static int HEIGHT = 2;
     /** The color of every OR Component */
     private final static Color COLOR = Color.BLUE;
 
