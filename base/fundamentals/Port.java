@@ -1,6 +1,7 @@
 package base.fundamentals;
 
 import base.Simulation;
+import base.events.AddChildrenEvent;
 import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
@@ -65,15 +66,18 @@ public class Port {
         double centerY = parent.getRect().getY() + centerYOffsetFromParent;
         double centerX = parent.getRect().getX() + centerXOffsetFromParent;
         this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
+
         circle.setId(String.valueOf(ID));
         circle.setUserData(this);
 
+        // Input Handlers
+        // Remove Connections on left-click
         circle.setOnMousePressed(me -> {
             if (me.getButton() == MouseButton.SECONDARY) {
                 removeConnection();
             }
         });
-
+        // Drag out a new Connection
         circle.setOnDragDetected(me -> {
             if (me.getButton() == MouseButton.PRIMARY) {
                 circle.startFullDrag();
@@ -82,7 +86,7 @@ public class Port {
                 connection = new Connection(this);
             }
         });
-
+        // Remove a dragged Connection that did not end over another Port
         circle.setOnMouseReleased(me -> {
             if (me.getButton() == MouseButton.PRIMARY && inDrag) {
                 inDrag = false;
@@ -91,13 +95,13 @@ public class Port {
                 }
             }
         });
-
+        // Move a dragged Connection to match the cursor
         circle.setOnMouseDragged(me -> {
             if (me.getButton() == MouseButton.PRIMARY && connection != null) {
                 connection.updateDrag(me);
             }
         });
-
+        // Attach a dragged Connection which was dropped over this Port
         circle.setOnMouseDragReleased(mde -> {
             if (connection == null) {
                 Shape otherShape = (Shape) mde.getGestureSource();
@@ -106,6 +110,8 @@ public class Port {
                 connection.registerPort(this);
             }
         });
+
+        Event.fireEvent(parent.getRect().getParent(), new AddChildrenEvent(circle));
 
         this.on = false;
         this.inDrag = false;
@@ -117,14 +123,6 @@ public class Port {
      */
     public Circle getCircle() {
         return circle;
-    }
-
-    /**
-     * Get the type of this Port, either PortType.INPUT or PortType.OUTPUT
-     * @return This Port's Type
-     */
-    public PortType getType() {
-        return type;
     }
 
     /**
@@ -176,23 +174,6 @@ public class Port {
         if (isConnected() && type == PortType.OUTPUT) {
             connection.updateState();
         }
-    }
-
-    /**
-     * Registers an already made Connection as ending at this Port
-     * @param connection The Connection which is now attached to this Port
-     */
-    private void registerConnection(Connection connection) {
-        this.connection = connection;
-    }
-
-    /**
-     * Connect this Port to another Port. <br>
-     * @param other The input Port which will receive signals from this Port
-     */
-    public void connectTo(Port other) {
-        connection = new Connection(this, other);
-        other.registerConnection(connection);
     }
 
     /**

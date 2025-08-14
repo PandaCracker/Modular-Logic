@@ -3,7 +3,6 @@ package base;
 import base.components.*;
 import base.events.*;
 import base.fundamentals.Component;
-import base.fundamentals.Port;
 import javafx.animation.*;
 import javafx.scene.Node;
 import javafx.application.Application;
@@ -39,63 +38,31 @@ public class Simulation extends Application {
     /** Number of cells tall the board currently is */
     private final int boardHeight;
 
-    /** A list of every Component on the board in this Simulation */
-    private final ArrayList<Component> components;
-
     /**
      * Create a new Simulation instance with default width, height, and no components
      */
     public Simulation() {
         this.boardWidth = INIT_BOARD_WIDTH;
         this.boardHeight = INIT_BOARD_HEIGHT;
-        this.components = new ArrayList<>();
-    }
-
-    /**
-     * Add a component to the Simulation
-     * @param component The Component to add
-     */
-    private void addComponent(Component component) {
-        this.components.add(component);
     }
 
     private void deleteChild(List<Node> childrenList, DeleteChildrenEvent deleteEvent) {
-        childrenList.removeAll(Arrays.stream(deleteEvent.getChildrenToRemove()).toList());
+        childrenList.removeAll(Arrays.asList(deleteEvent.getChildrenToRemove()));
     }
 
-    private void addChild(List<Node> childrenList, AddChildEvent addEvent) {
-        System.out.println("Child to add: " + addEvent.getChildToAdd());
-        childrenList.add(addEvent.getChildToAdd());
+    private void addChild(List<Node> childrenList, AddChildrenEvent addEvent) {
+        childrenList.addAll(Arrays.asList(addEvent.getChildrenToAdd()));
     }
 
-    /**
-     * Sets up the initial state of the simulation board
-     */
-    @Override
-    public void init() {
-        SignalSource src1 = new SignalSource(2, 5);
-        addComponent(src1);
-
-        Splitter spl1 = new Splitter(3, 5);
-        addComponent(spl1);
-
-        SignalSource src2 = new SignalSource(2, 7);
-        addComponent(src2);
-
-        Splitter spl2 = new Splitter(3, 7);
-        addComponent(spl2);
-
-        AND and1 = new AND(5, 5);
-        addComponent(and1);
-
-        OR or1 = new OR(5, 10);
-        addComponent(or1);
-
-        Light l1 = new Light(9, 6);
-        addComponent(l1);
-
-        Light l2 = new Light(9, 11);
-        addComponent(l2);
+    private void addInitialComponents() {
+        new SignalSource(2, 5);
+        new Splitter(3.5, 5);
+        new SignalSource(2, 7);
+        new Splitter(3.5, 7);
+        new AND(5, 5);
+        new OR(5, 10);
+        new Light(9, 6);
+        new Light(9, 11);
     }
 
     /**
@@ -110,34 +77,24 @@ public class Simulation extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         Pane root = new Pane();
+        List<Node> children = root.getChildren();
 
         root.setPrefWidth(boardWidth * CELL_SIZE);
         root.setPrefHeight(boardHeight * CELL_SIZE);
 
-        List<Node> children = root.getChildren();
-
-        // Add initial component, port, and connection Shapes to the display Pane
-        for (Component component : components) {
-            Rectangle rect = component.getRect();
-            children.add(rect);
-            children.add(component.getText());
-
-            for (Port outPort : component.getOutputPorts()) {
-                if (outPort.isConnected()) {
-                    children.add(outPort.getConnection().getLine());
-                }
-                children.add(outPort.getCircle());
-            }
-            children.addAll(Arrays.stream(component.getInputPorts()).map(Port::getCircle).toList());
-        }
+        Component.setDisplayPane(root);
 
         root.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
+        root.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
 
-        root.addEventHandler(AddChildEvent.EVENT_TYPE, e -> addChild(children, e));
+        addInitialComponents();
 
-        Timeline timeline = new Timeline( new KeyFrame(
-                Duration.millis(FRAME_DELAY_MS),
-                e -> components.forEach(Component::update)));
+        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
+                e -> children.stream().map(Node::getUserData)
+                        .filter(o -> o instanceof Component)
+                        .forEach(o -> ((Component) o).update())
+                ));
+
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
 

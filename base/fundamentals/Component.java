@@ -1,10 +1,12 @@
 package base.fundamentals;
 
 import base.Simulation;
+import base.events.AddChildrenEvent;
 import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -18,6 +20,9 @@ import java.util.Arrays;
  * @author Lucas Peterson
  */
 public abstract class Component {
+    /** Pane which holds every Shape being displayed on screen */
+    private static Pane displayPane;
+
     /** Counter which gives each Component and/or Port a unique ID */
     private static int ID_COUNTER = 0;
 
@@ -49,6 +54,14 @@ public abstract class Component {
     private double dragOffsetY;
 
     /**
+     * Set the displayPane that all Components will add their Shapes to
+     * @param pane The Pane to be the displayPane
+     */
+    public static void setDisplayPane(Pane pane) {
+        displayPane = pane;
+    }
+
+    /**
      * Set up the basic fields of a new object extending from Component
      * @param x The x position (in cells) of where the Component's top left corner will be
      * @param y The y position (in cells) of where the Component's top left corner will be
@@ -66,10 +79,25 @@ public abstract class Component {
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
         rect.setY(y * Simulation.CELL_SIZE);
+
         rect.setFill(color);
+
+        rect.setUserData(this);
 
         rect.setId(String.valueOf(ID_COUNTER));
         ID_COUNTER++;
+
+        // Set up display text
+        this.text = new Text();
+        text.setFont(DEFAULT_FONT);
+        text.setTextOrigin(VPos.CENTER);
+        text.setMouseTransparent(true);
+
+        setTextColor(defaultTextColor);
+        setText(defaultText);
+        centerAlignText();
+
+        Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
         this.numInputs = numInputs;
@@ -84,17 +112,7 @@ public abstract class Component {
             outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i, ID_COUNTER);
         }
 
-        // Set up display text
-        this.text = new Text();
-        text.setFont(DEFAULT_FONT);
-        text.setTextOrigin(VPos.CENTER);
-        text.setMouseTransparent(true);
-
-        setTextColor(defaultTextColor);
-        setText(defaultText);
-        centerAlignText();
-
-        // Movement Handlers
+        // Input Handlers
         rect.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 remove();
@@ -135,27 +153,11 @@ public abstract class Component {
     }
 
     /**
-     * Get the Text object to display on this Component
-     * @return The Text object displayed on this Component
-     */
-    public Text getText() {
-        return text;
-    }
-
-    /**
      * Get the number of input Ports this Component has
      * @return The number of input Ports on this Component
      */
     public int getNumInputs() {
         return numInputs;
-    }
-
-    /**
-     * Get an array of every input Port this Component has
-     * @return An array of this Component's input Ports
-     */
-    public Port[] getInputPorts() {
-        return inputPorts;
     }
 
     /**
@@ -173,14 +175,6 @@ public abstract class Component {
      */
     public int getNumOutputs() {
         return numOutputs;
-    }
-
-    /**
-     * Get an array of every output Port this Component has
-     * @return An array of this Component's output Ports
-     */
-    public Port[] getOutputPorts() {
-        return outputPorts;
     }
 
     /**
@@ -203,6 +197,14 @@ public abstract class Component {
     }
 
     /**
+     * Set the Component's Text Color
+     * @param textColor The Color to change the Text Color to
+     */
+    public void setTextColor(Color textColor) {
+        text.setFill(textColor);
+    }
+
+    /**
      * Set the Text displayed on this Component
      * @param newText The String to display
      */
@@ -210,14 +212,6 @@ public abstract class Component {
         text.setText(newText);
         this.halfTextWidth = text.getLayoutBounds().getCenterX() - text.getX();
         centerAlignText();
-    }
-
-    /**
-     * Set the Component's Text Color
-     * @param textColor The Color to change the Text Color to
-     */
-    public void setTextColor(Color textColor) {
-        text.setFill(textColor);
     }
 
     private void centerAlignText() {
