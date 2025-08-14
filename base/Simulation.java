@@ -4,12 +4,13 @@ import base.components.*;
 import base.events.*;
 import base.fundamentals.Component;
 import javafx.animation.*;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -25,11 +26,13 @@ import java.util.*;
 public class Simulation extends Application {
     /** Number of pixels one 'cell' is wide and tall */
     public final static double CELL_SIZE = 40.0;
-
     /** Number of cells wide the board is at the start of the simulation */
     public final static int INIT_BOARD_WIDTH = 15;
     /** Number of cells tall the board is at the start of the simulation */
     public final static int INIT_BOARD_HEIGHT = 15;
+    /** Pixels wide the side UI frame should be */
+    public final static int PREF_UI_WIDTH = 150;
+
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
 
@@ -66,6 +69,69 @@ public class Simulation extends Application {
     }
 
     /**
+     * Sets up everything related to the main display window
+     * @return The initialized and update-driven Pane object
+     */
+    private Pane initDisplay() {
+        final Pane display = new Pane();
+        List<Node> children = display.getChildren();
+
+        display.setPrefWidth(boardWidth * CELL_SIZE);
+        display.setPrefHeight(boardHeight * CELL_SIZE);
+
+        // Set up Component addition/removal processes
+        Component.setDisplayPane(display);
+        display.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
+        display.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
+
+        addInitialComponents();
+
+        // Set up logic update loop
+        final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
+                e -> display.getChildren().stream().map(Node::getUserData)
+                        .filter(o -> o instanceof Component)
+                        .forEach(o -> ((Component) o).update())
+        ));
+
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+
+        return display;
+    }
+
+    /**
+     * Sets up everything related to the UI
+     * @return The initialized UI frame
+     */
+    private VBox initAddUI() {
+        VBox frame = new VBox();
+        frame.setAlignment(Pos.CENTER);
+        frame.setPrefWidth(PREF_UI_WIDTH);
+        frame.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
+
+        ChoiceBox<String> componentSelector = new ChoiceBox<>();
+        Button addButton = new Button("Add new ____");
+
+        addButton.setOnAction(ae -> {
+            switch(componentSelector.getValue()) {
+                case "AND" : new AND(); break;
+                case "OR" : new OR(); break;
+                case "Light" : new Light(); break;
+                case "Signal Source" : new SignalSource(); break;
+                case "Splitter" : new Splitter(); break;
+                default: break;
+            }
+        });
+
+        componentSelector.getItems().addAll(List.of("AND", "OR", "Light", "Signal Source", "Splitter"));
+        componentSelector.setOnAction(e ->
+                addButton.setText("Add new " + componentSelector.getValue()));
+        frame.getChildren().addAll(addButton, componentSelector);
+
+        return frame;
+    }
+
+    /**
      * Construct the JavaFX Scene structure for this Application
      *
      * @param primaryStage the primary stage for this application, onto which
@@ -76,30 +142,13 @@ public class Simulation extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        final Pane root = new Pane();
-        List<Node> children = root.getChildren();
+        Pane display = initDisplay();
+        VBox addUI = initAddUI();
 
-        root.setPrefWidth(boardWidth * CELL_SIZE);
-        root.setPrefHeight(boardHeight * CELL_SIZE);
+        BorderPane window = new BorderPane();
+        window.setCenter(display);
+        window.setLeft(addUI);
 
-        // Set up Component addition/removal processes
-        Component.setDisplayPane(root);
-        root.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
-        root.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
-
-        addInitialComponents();
-
-        // Set up logic update loop
-        final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> root.getChildren().stream().map(Node::getUserData)
-                        .filter(o -> o instanceof Component)
-                        .forEach(o -> ((Component) o).update())
-                ));
-
-        timeline.setCycleCount(Animation.INDEFINITE);
-        timeline.play();
-
-        BorderPane window = new BorderPane(root);
         Scene scene = new Scene(window);
         primaryStage.setTitle("Modular Logic");
         primaryStage.setScene(scene);

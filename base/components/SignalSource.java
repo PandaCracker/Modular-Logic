@@ -44,6 +44,13 @@ public class SignalSource extends Component {
     }
 
     /**
+     * Create a new SignalSource at the top right of the display screen
+     */
+    public SignalSource() {
+        this(1,1);
+    }
+
+    /**
      * Toggle the state of this Signal Source
      *
      * @param me The MouseEvent which triggered this toggle

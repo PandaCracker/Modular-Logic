@@ -26,6 +26,13 @@ public class Splitter extends Component {
         super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null);
     }
 
+    /**
+     * Create a new Splitter at the top right of the display screen
+     */
+    public Splitter() {
+        this(1, 1);
+    }
+
     @Override
     public void update() {
         boolean in1 = getInputPort(0).isOn();

@@ -21,7 +21,7 @@ public class Light extends Component {
     /** The Color of the text on an active Light */
     private final static Color ON_TEXT_COLOR = Color.BLACK;
     /** The Color of an inactive Light */
-    private final static Color OFF_COLOR = Color.BLACK;
+    private final static Color OFF_COLOR = Color.DARKGRAY;
     /** The String displayed on an inactive Light */
     private final static String OFF_TEXT = "-";
     /** The Color of the text on an inactive Light */
@@ -35,6 +35,13 @@ public class Light extends Component {
      */
     public Light(double x, double y) {
         super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0, OFF_TEXT, OFF_TEXT_COLOR);
+    }
+
+    /**
+     * Create a new Light at the top right of the display screen
+     */
+    public Light() {
+        this(1,1);
     }
 
     @Override

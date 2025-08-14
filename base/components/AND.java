@@ -30,6 +30,13 @@ public class AND extends Component {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR);
     }
 
+    /**
+     * Create a new AND at the top right of the display screen
+     */
+    public AND() {
+        this(1,1);
+    }
+
     @Override
     public void update() {
         boolean in1 = getInputPort(0).isOn();

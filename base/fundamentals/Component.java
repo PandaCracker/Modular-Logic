@@ -4,6 +4,8 @@ import base.Simulation;
 import base.events.AddChildrenEvent;
 import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
@@ -141,7 +143,7 @@ public abstract class Component {
 
         rect.setOnMouseReleased(e -> {
             if (inDrag) {
-                move(e.getSceneX() - dragOffsetX, e.getSceneY() - dragOffsetY);
+                move(e.getX() - dragOffsetX, e.getY() - dragOffsetY);
                 inDrag = false;
             }
         });
@@ -229,12 +231,25 @@ public abstract class Component {
 
     /**
      * Move this Component
-     * @param sceneX The x position (in pixels) to move this Component to
-     * @param sceneY The y position (in pixels) to move this Component to
+     * @param x The x position (in pixels) to move this Component to
+     * @param y The y position (in pixels) to move this Component to
      */
-    public void move(double sceneX, double sceneY) {
-        rect.setX(sceneX);
-        rect.setY(sceneY);
+    public void move(double x, double y) {
+        Bounds bounds = rect.getParent().getLayoutBounds();
+
+        double inPortAdjustment = Math.min(numInputs, 1) * Port.RADIUS;
+        double minInBoundsX = bounds.getMinX() + inPortAdjustment;
+
+        double outPortAdjustment = Math.min(numOutputs, 1) * Port.RADIUS;
+        double maxInBoundsX = bounds.getMaxX() - rect.getWidth() - outPortAdjustment;
+
+        double maxInBoundsY = bounds.getMaxY() - rect.getHeight();
+
+        x = Math.max( Math.min(x, maxInBoundsX), minInBoundsX );
+        y = Math.max( Math.min(y, maxInBoundsY), bounds.getMinY() );
+
+        rect.setX(x);
+        rect.setY(y);
         centerAlignText();
         Arrays.stream(getAllPorts()).forEach(Port::updatePosition);
     }

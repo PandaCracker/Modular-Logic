@@ -107,8 +107,10 @@ public class Port {
             if (connection == null) {
                 Shape otherShape = (Shape) mde.getGestureSource();
                 Port otherPort = (Port) otherShape.getUserData();
-                connection = otherPort.getConnection();
-                connection.registerPort(this);
+                if (isInput() && otherPort.isOutput() || isOutput() && otherPort.isInput()) {
+                    connection = otherPort.getConnection();
+                    connection.registerPort(this);
+                }
             }
         });
 
