@@ -26,6 +26,11 @@ public abstract class Component {
     /** Counter which gives each Component and/or Port a unique ID */
     private static int ID_COUNTER = 0;
 
+    /** How many pixels wide the rounded portion on the corner of Components is */
+    private final static double ROUND_CORNER_WIDTH = Simulation.CELL_SIZE * 0.2;
+    /** How many pixels tall the rounded portion on the corner of Components is */
+    private final static double ROUND_CORNER_HEIGHT = Simulation.CELL_SIZE * 0.2;
+
     /** Font used by all text displayed on Components */
     private final static Font DEFAULT_FONT = Font.getDefault();
     /** Text field placed on the center of every Component */
@@ -79,6 +84,9 @@ public abstract class Component {
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
         rect.setY(y * Simulation.CELL_SIZE);
+
+        rect.setArcWidth(ROUND_CORNER_WIDTH);
+        rect.setArcHeight(ROUND_CORNER_HEIGHT);
 
         rect.setFill(color);
 

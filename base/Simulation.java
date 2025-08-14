@@ -76,21 +76,22 @@ public class Simulation extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Pane root = new Pane();
+        final Pane root = new Pane();
         List<Node> children = root.getChildren();
 
         root.setPrefWidth(boardWidth * CELL_SIZE);
         root.setPrefHeight(boardHeight * CELL_SIZE);
 
+        // Set up Component addition/removal processes
         Component.setDisplayPane(root);
-
         root.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
         root.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
 
         addInitialComponents();
 
-        Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> children.stream().map(Node::getUserData)
+        // Set up logic update loop
+        final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
+                e -> root.getChildren().stream().map(Node::getUserData)
                         .filter(o -> o instanceof Component)
                         .forEach(o -> ((Component) o).update())
                 ));

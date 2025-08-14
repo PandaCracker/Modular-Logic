@@ -24,7 +24,10 @@ public class Connection {
     private final static Color ON_COLOR = Color.GREEN;
     /** The Color of a Connection Line when it is off */
     private final static Color OFF_COLOR = Color.BLACK;
+    /** The width of a Connection Line in Pixels */
     private final static double LINE_WIDTH = 5.0;
+    /** The end cap style of a Connection Line */
+    private final static StrokeLineCap LINE_CAP = StrokeLineCap.ROUND;
 
     /** The Port the signal comes from */
     private Port sourcePort;
@@ -66,7 +69,8 @@ public class Connection {
         line.setUserData(this);
 
         line.setStrokeWidth(LINE_WIDTH);
-        line.setStrokeLineCap(StrokeLineCap.ROUND);
+        line.setStrokeLineCap(LINE_CAP);
+
         line.setId(String.valueOf(ID_COUNTER));
         ID_COUNTER--;
 

@@ -19,9 +19,9 @@ public class Port {
     public enum PortType {INPUT, OUTPUT}
 
     /** The radius of every Port, in pixels */
-    public double RADIUS = Simulation.CELL_SIZE / 6;
+    public static double RADIUS = Simulation.CELL_SIZE / 6;
     /** The Color of every Port */
-    private final Color COLOR = Color.SLATEGRAY;
+    private final static Color COLOR = Color.SLATEGRAY;
 
     /** The Circle which represents the Port on the Simulation Board */
     private final Circle circle;
@@ -41,6 +41,7 @@ public class Port {
     /** Whether this Port is carrying a signal */
     private boolean on;
 
+    /** Whether this Port is currently dragging out a new Connection */
     private boolean inDrag;
 
     /**
