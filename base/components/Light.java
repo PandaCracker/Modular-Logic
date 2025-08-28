@@ -21,7 +21,7 @@ public class Light extends Component {
     /** The Color of the text on an active Light */
     private final static Color ON_TEXT_COLOR = Color.BLACK;
     /** The Color of an inactive Light */
-    private final static Color OFF_COLOR = Color.DARKGRAY;
+    private final static Color OFF_COLOR = Color.GRAY;
     /** The String displayed on an inactive Light */
     private final static String OFF_TEXT = "-";
     /** The Color of the text on an inactive Light */

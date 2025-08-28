@@ -32,6 +32,11 @@ public abstract class Component {
     /** How many pixels tall the rounded portion on the corner of Components is */
     private final static double ROUND_CORNER_HEIGHT = Simulation.CELL_SIZE * 0.2;
 
+    /** Default Component border Color */
+    private final static Color BORDER_COLOR = Color.BLACK;
+    /** Default border width on the display Rectangle */
+    private final static double STROKE_WIDTH = 2.0;
+
     /** Font used by all text displayed on Components */
     private final static Font DEFAULT_FONT = Font.getDefault();
     /** Text field placed on the center of every Component */
@@ -41,8 +46,7 @@ public abstract class Component {
 
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
-    /** Default fill color for the display Rectangle */
-    private final Color color;
+
 
     /** Number of input Ports on this Component */
     private final int numInputs;
@@ -91,8 +95,9 @@ public abstract class Component {
         rect.setArcWidth(ROUND_CORNER_WIDTH);
         rect.setArcHeight(ROUND_CORNER_HEIGHT);
 
-        this.color = color;
         rect.setFill(color);
+        rect.setStroke(BORDER_COLOR);
+        rect.setStrokeWidth(STROKE_WIDTH);
 
         rect.setUserData(this);
 
@@ -209,6 +214,14 @@ public abstract class Component {
     }
 
     /**
+     * Getter for if this Component is being dragged
+     * @return Whether this Component is being dragged
+     */
+    public boolean isInDrag() {
+        return inDrag;
+    }
+
+    /**
      * Set the Component's Text Color
      * @param textColor The Color to change the Text Color to
      */
@@ -275,14 +288,16 @@ public abstract class Component {
      * Set this Component's color to a highlighted version to indicate selection
      */
     public void highlight() {
-        rect.setFill(((Color) rect.getFill()).brighter());
+        if (rect.getStrokeWidth() == STROKE_WIDTH) {
+            rect.setStrokeWidth(rect.getStrokeWidth() * 2);
+        }
     }
 
     /**
      * Reset this Component's color to its default
      */
     public void resetColor() {
-        rect.setFill(color);
+        rect.setStrokeWidth(STROKE_WIDTH);
     }
 
     /**

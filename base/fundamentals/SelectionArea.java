@@ -56,8 +56,9 @@ public class SelectionArea {
      * Moves the free corner to a specified position
      * @param x The x coordinate of the free corner
      * @param y The y coordinate of the free corner
+     * @param components The list of all Components that may be newly selected.
      */
-    public void move(double x, double y) {
+    public void move(double x, double y, List<Component> components) {
         double width = x - anchor[0];
         if (width < 0) {
             rect.setX(anchor[0] + width);
@@ -75,7 +76,11 @@ public class SelectionArea {
         rect.setWidth(Math.abs(width));
         rect.setHeight(Math.abs(height));
 
-        selected =
+        Bounds selectionRange = rect.getLayoutBounds();
+        selected = components.stream()
+                .filter(component ->
+                        selectionRange.contains(component.getRect().getX(), component.getRect().getY()))
+                .toList();
     }
 
     /**
@@ -92,17 +97,16 @@ public class SelectionArea {
      * Gets the list of Components currently being selected
      * @return A list of all (if any) Components that are in the SelectionArea
      */
-    public List<Component> getSelected(List<Component> components) {
-        Bounds selectionArea = getRect().getLayoutBounds();
-        return components.stream()
-                .filter(component -> selectionArea.contains(component.getRect().getLayoutBounds()))
-                .toList();
+    public List<Component> getSelected() {
+        return selected;
     }
 
     /**
      * Reset the SelectionArea once the MouseDrag is complete
      */
     public void done() {
+        selected.forEach(Component::resetColor);
+        selected = new ArrayList<>();
         rect.setHeight(0);
         rect.setWidth(0);
     }

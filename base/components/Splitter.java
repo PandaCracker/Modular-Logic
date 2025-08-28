@@ -15,7 +15,7 @@ public class Splitter extends Component {
     /** The height of a Splitter in cells */
     private final static double HEIGHT = 1.5;
     /** The color of every Splitter */
-    private final static Color COLOR = Color.BLACK;
+    private final static Color COLOR = Color.DARKGRAY;
 
     /**
      * Create a new Splitter

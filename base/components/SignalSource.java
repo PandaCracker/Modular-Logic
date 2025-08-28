@@ -22,7 +22,7 @@ public class SignalSource extends Component {
     /** The Color of the text on an active Signal Source */
     private final static Color ON_TEXT_COLOR = Color.BLACK;
     /** The color of an inactive Signal Source */
-    private final static Color OFF_COLOR = Color.BLACK;
+    private final static Color OFF_COLOR = Color.DARKGRAY;
     /** The Sting displayed on an inactive Signal Source */
     private final static String OFF_TEXT = "-";
     /** The Color of the text on an inactive Signal Source */

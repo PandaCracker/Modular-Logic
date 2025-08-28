@@ -2,22 +2,18 @@ package base;
 
 import base.components.*;
 import base.events.*;
-import base.fundamentals.Component;
-import base.fundamentals.SelectionArea;
+import base.fundamentals.*;
+
+import javafx.application.Application;
 import javafx.animation.*;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
-import javafx.application.Application;
-import javafx.scene.Scene;
+import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.w3c.dom.css.Rect;
 
 import java.util.*;
 
@@ -46,12 +42,23 @@ public class Simulation extends Application {
     /** Number of cells tall the board currently is */
     private final int boardHeight;
 
+    /** Whether there is a multi-selection action taking place */
+    private boolean selecting;
+    /** The SelectionArea object handling multi-selection */
+    private final SelectionArea selection;
+    /** The set of Components currently being selected */
+    private final HashSet<Component> selectedComponents;
+
     /**
      * Create a new Simulation instance with default width, height, and no components
      */
     public Simulation() {
         this.boardWidth = INIT_BOARD_WIDTH;
         this.boardHeight = INIT_BOARD_HEIGHT;
+
+        this.selecting = false;
+        this.selection = new SelectionArea(0,0);
+        this.selectedComponents = new HashSet<>();
     }
 
     private void deleteChild(List<Node> childrenList, DeleteChildrenEvent deleteEvent) {
@@ -81,13 +88,26 @@ public class Simulation extends Application {
      */
     private Object getClickedOn(MouseEvent me, Pane displayPane) {
         List<Node> children = displayPane.getChildren();
-
-        for (Node node : children) {
-            if (node.getBoundsInParent().contains(me.getX(), me.getY())) {
-                 return node.getUserData();
+        if (displayPane.contains(me.getX(), me.getY())) {
+            for (Node node : children) {
+                if (node.getLayoutBounds().contains(me.getX(), me.getY())) {
+                    return node.getUserData();
+                }
             }
         }
         return null;
+    }
+
+    /**
+     * Get a list of all Components in a list of all displayed items
+     * @param children A list possibly containing Components
+     * @return A list of all (if any) Components in the list provided
+     */
+    public List<Component> componentsFromChildren(List<Node> children) {
+        return children.stream()
+                .filter(n -> n.getUserData() instanceof Component)
+                .map(n -> (Component) n.getUserData())
+                .toList();
     }
 
     /**
@@ -103,27 +123,40 @@ public class Simulation extends Application {
 
 
         // Multi-selection handling
-        SelectionArea selection = new SelectionArea(0,0);
-
         display.setOnDragDetected(e -> {
+            // Know a multi-select is happening
             if (getClickedOn(e, display) == null) {
+                selecting = true;
                 children.add(selection.getRect());
             }
         });
 
         display.setOnMousePressed(e -> {
+            // Possible multi-select start, more accurate than waiting for drag detection
             if (getClickedOn(e, display) == null) {
                 selection.moveAnchor(e.getX(), e.getY());
             }
         });
 
         display.setOnMouseDragged(e -> {
-            selection.move(e.getX(), e.getY());
+            if (selecting) {
+                List<Component> components = componentsFromChildren(children);
+                selection.move(e.getX(), e.getY(), components);
+
+                selectedComponents.clear();
+                selectedComponents.addAll(selection.getSelected());
+                selectedComponents.forEach(Component::highlight);
+                components.stream().filter(component -> !selectedComponents.contains(component))
+                        .forEach(Component::resetColor);
+            }
         });
 
         display.setOnMouseReleased(e -> {
-            children.remove(selection.getRect());
-            selection.done();
+            if (selecting) {
+                children.remove(selection.getRect());
+                selection.done();
+                selecting = false;
+            }
         });
 
         // Set up Component addition/removal processes
@@ -135,9 +168,7 @@ public class Simulation extends Application {
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> display.getChildren().stream().map(Node::getUserData)
-                        .filter(o -> o instanceof Component)
-                        .forEach(o -> ((Component) o).update())
+                e -> componentsFromChildren(display.getChildren()).forEach(Component::update)
         ));
 
         timeline.setCycleCount(Animation.INDEFINITE);
