@@ -3,15 +3,18 @@ package base;
 import base.components.*;
 import base.events.*;
 import base.fundamentals.Component;
+import base.fundamentals.SelectionArea;
 import javafx.animation.*;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.w3c.dom.css.Rect;
@@ -71,6 +74,23 @@ public class Simulation extends Application {
     }
 
     /**
+     * Get the Object clicked on by a MouseEvent, if any
+     * @param me The MouseEvent in question. Assumed to be targeted at the displayPane
+     * @param displayPane The Pane the MouseEvent is generated for
+     * @return The Object, if any, on the display pane which was clicked on
+     */
+    private Object getClickedOn(MouseEvent me, Pane displayPane) {
+        List<Node> children = displayPane.getChildren();
+
+        for (Node node : children) {
+            if (node.getBoundsInParent().contains(me.getX(), me.getY())) {
+                 return node.getUserData();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets up everything related to the main display window
      * @return The initialized and update-driven Pane object
      */
@@ -83,24 +103,27 @@ public class Simulation extends Application {
 
 
         // Multi-selection handling
-        Rectangle selection = new Rectangle(0, 0, Color.CORNFLOWERBLUE.brighter().);
-        selection.setId("selection");
+        SelectionArea selection = new SelectionArea(0,0);
 
         display.setOnDragDetected(e -> {
-            selection.setX(e.getX());
-            selection.setY(e.getY());
-            children.addLast(selection);
+            if (getClickedOn(e, display) == null) {
+                children.add(selection.getRect());
+            }
+        });
+
+        display.setOnMousePressed(e -> {
+            if (getClickedOn(e, display) == null) {
+                selection.moveAnchor(e.getX(), e.getY());
+            }
         });
 
         display.setOnMouseDragged(e -> {
-            selection.setWidth(e.getX() - selection.getX());
-            selection.setHeight(e.getY() - selection.getY());
+            selection.move(e.getX(), e.getY());
         });
 
         display.setOnMouseReleased(e -> {
-            children.remove(selection);
-            selection.setWidth(0);
-            selection.setHeight(0);
+            children.remove(selection.getRect());
+            selection.done();
         });
 
         // Set up Component addition/removal processes

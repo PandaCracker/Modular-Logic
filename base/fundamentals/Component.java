@@ -41,6 +41,8 @@ public abstract class Component {
 
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
+    /** Default fill color for the display Rectangle */
+    private final Color color;
 
     /** Number of input Ports on this Component */
     private final int numInputs;
@@ -89,14 +91,13 @@ public abstract class Component {
         rect.setArcWidth(ROUND_CORNER_WIDTH);
         rect.setArcHeight(ROUND_CORNER_HEIGHT);
 
+        this.color = color;
         rect.setFill(color);
 
         rect.setUserData(this);
 
         rect.setId(String.valueOf(ID_COUNTER));
         ID_COUNTER++;
-
-        rect.setMouseTransparent(false);
 
         // Set up display text
         this.text = new Text();
@@ -268,6 +269,20 @@ public abstract class Component {
         for (Port port : getAllPorts()) {
             port.remove();
         }
+    }
+
+    /**
+     * Set this Component's color to a highlighted version to indicate selection
+     */
+    public void highlight() {
+        rect.setFill(((Color) rect.getFill()).brighter());
+    }
+
+    /**
+     * Reset this Component's color to its default
+     */
+    public void resetColor() {
+        rect.setFill(color);
     }
 
     /**
