@@ -4,7 +4,6 @@ import base.Simulation;
 import base.events.AddChildrenEvent;
 import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
-import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
@@ -96,6 +95,8 @@ public abstract class Component {
 
         rect.setId(String.valueOf(ID_COUNTER));
         ID_COUNTER++;
+
+        rect.setMouseTransparent(false);
 
         // Set up display text
         this.text = new Text();
@@ -224,17 +225,21 @@ public abstract class Component {
         centerAlignText();
     }
 
+    /**
+     * Center-align the Text displayed on this Component
+     */
     private void centerAlignText() {
         text.setX(rect.getLayoutBounds().getCenterX() - halfTextWidth);
         text.setY(rect.getLayoutBounds().getCenterY());
     }
 
     /**
-     * Move this Component
+     * Move this Component to a specified position
      * @param x The x position (in pixels) to move this Component to
      * @param y The y position (in pixels) to move this Component to
      */
     public void move(double x, double y) {
+        // Calculate the boundaries for sensible movement (don't go past screen edges)
         Bounds bounds = rect.getParent().getLayoutBounds();
 
         double inPortAdjustment = Math.min(numInputs, 1) * Port.RADIUS;

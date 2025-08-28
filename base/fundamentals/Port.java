@@ -180,7 +180,7 @@ public class Port {
     }
 
     /**
-     * Register that this Port's Connection has been removed
+     * Register that this Port's Connection has been removed <br>
      * Should only be called by the Connection's remove() method
      * @see Connection#remove
      */

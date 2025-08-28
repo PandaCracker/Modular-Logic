@@ -11,8 +11,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.w3c.dom.css.Rect;
 
 import java.util.*;
 
@@ -78,6 +80,28 @@ public class Simulation extends Application {
 
         display.setPrefWidth(boardWidth * CELL_SIZE);
         display.setPrefHeight(boardHeight * CELL_SIZE);
+
+
+        // Multi-selection handling
+        Rectangle selection = new Rectangle(0, 0, Color.CORNFLOWERBLUE.brighter().);
+        selection.setId("selection");
+
+        display.setOnDragDetected(e -> {
+            selection.setX(e.getX());
+            selection.setY(e.getY());
+            children.addLast(selection);
+        });
+
+        display.setOnMouseDragged(e -> {
+            selection.setWidth(e.getX() - selection.getX());
+            selection.setHeight(e.getY() - selection.getY());
+        });
+
+        display.setOnMouseReleased(e -> {
+            children.remove(selection);
+            selection.setWidth(0);
+            selection.setHeight(0);
+        });
 
         // Set up Component addition/removal processes
         Component.setDisplayPane(display);
