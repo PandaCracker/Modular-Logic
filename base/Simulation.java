@@ -46,8 +46,6 @@ public class Simulation extends Application {
     private boolean selecting;
     /** The SelectionArea object handling multi-selection */
     private final SelectionArea selection;
-    /** The set of Components currently being selected */
-    private final HashSet<Component> selectedComponents;
 
     /**
      * Create a new Simulation instance with default width, height, and no components
@@ -58,7 +56,6 @@ public class Simulation extends Application {
 
         this.selecting = false;
         this.selection = new SelectionArea(0,0);
-        this.selectedComponents = new HashSet<>();
     }
 
     private void deleteChild(List<Node> childrenList, DeleteChildrenEvent deleteEvent) {
@@ -134,20 +131,14 @@ public class Simulation extends Application {
         display.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
             if (getClickedOn(e, display) == null) {
-                selection.moveAnchor(e.getX(), e.getY());
+                selection.startNew(e.getX(), e.getY());
             }
         });
 
         display.setOnMouseDragged(e -> {
             if (selecting) {
                 List<Component> components = componentsFromChildren(children);
-                selection.move(e.getX(), e.getY(), components);
-
-                selectedComponents.clear();
-                selectedComponents.addAll(selection.getSelected());
-                selectedComponents.forEach(Component::highlight);
-                components.stream().filter(component -> !selectedComponents.contains(component))
-                        .forEach(Component::resetColor);
+                selection.expandSelection(e.getX(), e.getY(), components);
             }
         });
 
@@ -191,7 +182,8 @@ public class Simulation extends Application {
         Button addButton = new Button("Add new ____");
 
         addButton.setOnAction(ae -> {
-            switch(componentSelector.getValue()) {
+            String addText = componentSelector.getValue();
+            switch((addText == null ? "" : addText)) {
                 case "AND" : new AND(); break;
                 case "OR" : new OR(); break;
                 case "Light" : new Light(); break;
@@ -202,8 +194,11 @@ public class Simulation extends Application {
         });
 
         componentSelector.getItems().addAll(List.of("AND", "OR", "Light", "Signal Source", "Splitter"));
-        componentSelector.setOnAction(e ->
-                addButton.setText("Add new " + componentSelector.getValue()));
+        componentSelector.setOnAction(e -> {
+            String addText = componentSelector.getValue();
+            addButton.setText("Add new " + (addText == null ? "___" : addText));
+        });
+
         frame.getChildren().addAll(addButton, componentSelector);
 
         return frame;

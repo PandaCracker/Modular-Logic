@@ -65,6 +65,13 @@ public abstract class Component {
     /** How far away from the origin of this Component's rect the most recent drag originated from in the Y direction */
     private double dragOffsetY;
 
+    /** Whether this Component is a part of a multi-selection */
+    private boolean selected;
+    /** The SelectionArea this Component is being multi-selected with */
+    private SelectionArea selector;
+    /** Whether this Component should relay MouseEvents to other selected Components. Used to avoid feedback loops */
+    private boolean canEcho;
+
     /**
      * Set the displayPane that all Components will add their Shapes to
      * @param pane The Pane to be the displayPane
@@ -114,6 +121,15 @@ public abstract class Component {
         setText(defaultText);
         centerAlignText();
 
+        // Init dragging vars
+        this.inDrag = false;
+        this.dragOffsetX = 0;
+        this.dragOffsetY = 0;
+
+        this.selected = false;
+        this.selector = null;
+        this.canEcho = true;
+
         Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
@@ -133,6 +149,9 @@ public abstract class Component {
         rect.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 remove();
+                if (selected && canEcho) {
+                    selector.echo(this, e);
+                }
             }
         });
 
@@ -140,11 +159,18 @@ public abstract class Component {
             inDrag = true;
             dragOffsetX = e.getX() - rect.getX();
             dragOffsetY = e.getY() - rect.getY();
+
+            if (selected && canEcho) {
+                selector.echo(this, e);
+            }
         });
 
         rect.setOnMouseDragged(e -> {
             if (inDrag) {
                 move(e.getX() - dragOffsetX, e.getY() - dragOffsetY);
+                if (selected && canEcho) {
+                    selector.echo(this, e);
+                }
             }
         });
 
@@ -152,13 +178,12 @@ public abstract class Component {
             if (inDrag) {
                 move(e.getX() - dragOffsetX, e.getY() - dragOffsetY);
                 inDrag = false;
+                if (selected && canEcho) {
+                    selector.echo(this, e);
+                }
             }
         });
 
-        // Init dragging vars
-        this.inDrag = false;
-        this.dragOffsetX = 0;
-        this.dragOffsetY = 0;
     }
 
     /**
@@ -214,11 +239,18 @@ public abstract class Component {
     }
 
     /**
-     * Getter for if this Component is being dragged
-     * @return Whether this Component is being dragged
+     * Set this Component to be able to echo MouseEvents to other selected Components
      */
-    public boolean isInDrag() {
-        return inDrag;
+    public void allowEcho() {
+        canEcho = true;
+    }
+
+    /**
+     * Stop this Component from echoing MouseEvents to other selected Components.
+     * Should be called whenever receiving an echo to avoid feedback loops.
+     */
+    public void disallowEcho() {
+        canEcho = false;
     }
 
     /**
@@ -285,18 +317,22 @@ public abstract class Component {
     }
 
     /**
-     * Set this Component's color to a highlighted version to indicate selection
+     * Notify this Component it is a part of a multi-selection
      */
-    public void highlight() {
-        if (rect.getStrokeWidth() == STROKE_WIDTH) {
+    public void select(SelectionArea selector) {
+        if (!selected) {
+            selected = true;
+            this.selector = selector;
             rect.setStrokeWidth(rect.getStrokeWidth() * 2);
         }
     }
 
     /**
-     * Reset this Component's color to its default
+     * Notify this Component it is no longer part of a multi-selection
      */
-    public void resetColor() {
+    public void deselect() {
+        selected = false;
+        selector = null;
         rect.setStrokeWidth(STROKE_WIDTH);
     }
 

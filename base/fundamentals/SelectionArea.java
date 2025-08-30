@@ -1,7 +1,7 @@
 package base.fundamentals;
 
 import javafx.geometry.Bounds;
-import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
@@ -58,7 +58,7 @@ public class SelectionArea {
      * @param y The y coordinate of the free corner
      * @param components The list of all Components that may be newly selected.
      */
-    public void move(double x, double y, List<Component> components) {
+    public void expandSelection(double x, double y, List<Component> components) {
         double width = x - anchor[0];
         if (width < 0) {
             rect.setX(anchor[0] + width);
@@ -77,20 +77,49 @@ public class SelectionArea {
         rect.setHeight(Math.abs(height));
 
         Bounds selectionRange = rect.getLayoutBounds();
-        selected = components.stream()
-                .filter(component ->
-                        selectionRange.contains(component.getRect().getX(), component.getRect().getY()))
-                .toList();
+
+        for (Component component : components) {
+            Rectangle componentRect = component.getRect();
+            Bounds rectBounds = componentRect.getLayoutBounds();
+            if (selectionRange.contains(componentRect.getX(), componentRect.getY()) ||
+                selectionRange.contains(rectBounds.getCenterX(), rectBounds.getCenterY())) {
+                selected.add(component);
+                component.select(this);
+            } else {
+                // Innate check only tries to remove if present
+                selected.remove(component);
+                component.deselect();
+            }
+        }
     }
 
     /**
-     * Moves the anchored corner to a specified position
+     * Moves the anchored corner to a specified position and resets state
      * @param anchorX The x coordinate of the anchored corner
      * @param anchorY The y coordinate of the anchored corner
      */
-    public void moveAnchor(double anchorX, double anchorY) {
+    public void startNew(double anchorX, double anchorY) {
+        selected.forEach(Component::deselect);
+        selected.clear();
         anchor[0] = anchorX;
         anchor[1] = anchorY;
+    }
+
+    /**
+     * Echo a MouseEvent from one source across all selected Components
+     * @param source The selected Component the MouseEvent came from
+     * @param me The MouseEvent to echo
+     */
+    public void echo(Component source, MouseEvent me) {
+        // Remove echo calls modify the selected list when the event is fired, so need to iterate from a copy
+        List<Component> staticCopy = List.copyOf(selected);
+        for (Component component : staticCopy) {
+            if (component != source) {
+                component.disallowEcho();
+                MouseEvent.fireEvent(component.getRect(), me);
+                component.allowEcho();
+            }
+        }
     }
 
     /**
@@ -102,11 +131,9 @@ public class SelectionArea {
     }
 
     /**
-     * Reset the SelectionArea once the MouseDrag is complete
+     * Clear the SelectionArea from the screen once the MouseDrag is complete
      */
     public void done() {
-        selected.forEach(Component::resetColor);
-        selected = new ArrayList<>();
         rect.setHeight(0);
         rect.setWidth(0);
     }
