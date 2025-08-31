@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class Simulation extends Application {
     /** Number of pixels one 'cell' is wide and tall */
-    public final static double CELL_SIZE = 80.0;
+    public final static double CELL_SIZE = 60;
     /** Number of cells wide the board is at the start of the simulation */
     public final static int INIT_BOARD_WIDTH = 15;
     /** Number of cells tall the board is at the start of the simulation */
@@ -186,6 +186,7 @@ public class Simulation extends Application {
             switch((addText == null ? "" : addText)) {
                 case "AND" : new AND(); break;
                 case "OR" : new OR(); break;
+                case "NOT" : new NOT(); break;
                 case "Light" : new Light(); break;
                 case "Signal Source" : new SignalSource(); break;
                 case "Splitter" : new Splitter(); break;
@@ -193,7 +194,7 @@ public class Simulation extends Application {
             }
         });
 
-        componentSelector.getItems().addAll(List.of("AND", "OR", "Light", "Signal Source", "Splitter"));
+        componentSelector.getItems().addAll(List.of("AND", "OR", "NOT", "Light", "Signal Source", "Splitter"));
         componentSelector.setOnAction(e -> {
             String addText = componentSelector.getValue();
             addButton.setText("Add new " + (addText == null ? "___" : addText));
