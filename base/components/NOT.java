@@ -28,4 +28,9 @@ public class NOT extends Component {
     public void update() {
         getOutputPort(0).setState(!getInputPort(0).isOn());
     }
+
+    @Override
+    public String toString() {
+        return TEXT + super.toString();
+    }
 }
