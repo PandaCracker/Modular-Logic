@@ -26,7 +26,7 @@ import java.util.*;
  */
 public class Simulation extends Application {
     /** Number of pixels one 'cell' is wide and tall */
-    public final static double CELL_SIZE = 40.0;
+    public final static double CELL_SIZE = 80.0;
     /** Number of cells wide the board is at the start of the simulation */
     public final static int INIT_BOARD_WIDTH = 15;
     /** Number of cells tall the board is at the start of the simulation */
@@ -122,8 +122,7 @@ public class Simulation extends Application {
         // Multi-selection handling
         display.setOnDragDetected(e -> {
             // Know a multi-select is happening
-            if (getClickedOn(e, display) == null) {
-                selecting = true;
+            if (selecting) {
                 children.add(selection.getRect());
             }
         });
@@ -131,6 +130,7 @@ public class Simulation extends Application {
         display.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
             if (getClickedOn(e, display) == null) {
+                selecting = true;
                 selection.startNew(e.getX(), e.getY());
             }
         });

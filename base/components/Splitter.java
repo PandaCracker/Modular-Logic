@@ -39,4 +39,9 @@ public class Splitter extends Component {
         getOutputPort(0).setState(in1);
         getOutputPort(1).setState(in1);
     }
+
+    @Override
+    public String toString() {
+        return "Splitter " + super.toString();
+    }
 }

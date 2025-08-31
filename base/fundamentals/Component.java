@@ -310,9 +310,12 @@ public abstract class Component {
      * Components
      */
     public void remove() {
-        Event.fireEvent(rect.getParent(), new DeleteChildrenEvent(rect, text));
-        for (Port port : getAllPorts()) {
-            port.remove();
+        if (rect.getParent() == null) {
+        } else {
+            Event.fireEvent(rect.getParent(), new DeleteChildrenEvent(rect, text));
+            for (Port port : getAllPorts()) {
+                port.remove();
+            }
         }
     }
 
@@ -356,5 +359,10 @@ public abstract class Component {
     @Override
     public String toString() {
         return "Component at " + rect.getX() + ", " + rect.getY();
+    }
+
+    @Override
+    public int hashCode() {
+        return rect.hashCode();
     }
 }

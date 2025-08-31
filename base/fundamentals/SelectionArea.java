@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public class SelectionArea {
     /** The coordinates of the anchored corner, where the click-drag started */
     private final double[] anchor;
 
-    private List<Component> selected;
+    private final HashSet<Component> selected;
 
     /**
      * Creates a new SelectionArea with an anchored corner
@@ -41,7 +42,7 @@ public class SelectionArea {
         anchor[0] = anchorX;
         anchor[1] = anchorY;
 
-        this.selected = new ArrayList<>();
+        this.selected = new HashSet<>();
     }
 
     /**
@@ -79,13 +80,12 @@ public class SelectionArea {
         Bounds selectionRange = rect.getLayoutBounds();
 
         for (Component component : components) {
-            Rectangle componentRect = component.getRect();
-            Bounds rectBounds = componentRect.getLayoutBounds();
-            if (selectionRange.contains(componentRect.getX(), componentRect.getY()) ||
-                selectionRange.contains(rectBounds.getCenterX(), rectBounds.getCenterY())) {
+            Bounds rectBounds = component.getRect().getLayoutBounds();
+            boolean centerInSelectionRange = selectionRange.contains(rectBounds.getCenterX(), rectBounds.getCenterY());
+            if (!selected.contains(component) && centerInSelectionRange) {
                 selected.add(component);
                 component.select(this);
-            } else {
+            } else if (!centerInSelectionRange){
                 // Innate check only tries to remove if present
                 selected.remove(component);
                 component.deselect();
@@ -111,7 +111,7 @@ public class SelectionArea {
      * @param me The MouseEvent to echo
      */
     public void echo(Component source, MouseEvent me) {
-        // Remove echo calls modify the selected list when the event is fired, so need to iterate from a copy
+        // Echoing a remove call modifies the selected list when the event is fired, so need to iterate from a copy
         List<Component> staticCopy = List.copyOf(selected);
         for (Component component : staticCopy) {
             if (component != source) {
@@ -120,14 +120,6 @@ public class SelectionArea {
                 component.allowEcho();
             }
         }
-    }
-
-    /**
-     * Gets the list of Components currently being selected
-     * @return A list of all (if any) Components that are in the SelectionArea
-     */
-    public List<Component> getSelected() {
-        return selected;
     }
 
     /**
