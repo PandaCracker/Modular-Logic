@@ -6,12 +6,14 @@ import base.fundamentals.*;
 
 import javafx.application.Application;
 import javafx.animation.*;
+import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -32,7 +34,9 @@ public class Simulation extends Application {
     /** Number of cells tall the board is at the start of the simulation */
     public final static int INIT_BOARD_HEIGHT = 15;
     /** Pixels wide the side UI frame should be */
-    public final static int PREF_UI_WIDTH = 150;
+    public final static int PREF_UI_WIDTH = 225;
+    /** Max pixels tall the TextAreas should be */
+    public final static int MAX_TEXT_AREA_HEIGHT = 40;
 
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
@@ -168,6 +172,40 @@ public class Simulation extends Application {
         return display;
     }
 
+    TextArea createTextArea(String promptText) {
+        TextArea ret = new TextArea();
+        ret.setMaxHeight(MAX_TEXT_AREA_HEIGHT);
+        ret.setWrapText(true);
+        ret.setPromptText(promptText);
+        return ret;
+    }
+
+    /**
+     * Sets up everything related to the Compound Component UI elements
+     * @return The initialized VBox UI frame
+     */
+    private VBox initCompoundComponentUI() {
+        VBox frame = new VBox();
+
+        TextArea nameField = createTextArea("Enter Compound Component Name, e.g. XOR");
+
+        Label colorLabel = new Label("Select Compound Component Color");
+        ColorPicker colorPicker = new ColorPicker();
+
+        TextArea widthField = createTextArea("Enter Compound Component Width (in cells)");
+        TextArea heightField = createTextArea("Enter Compound Component Height (in cells)");
+
+        Button createCompoundButton = new Button("Create new Compound Component from highlighted Components");
+        createCompoundButton.setWrapText(true);
+        createCompoundButton.setTextAlignment(TextAlignment.CENTER);
+
+        frame.getChildren().addAll(nameField, colorLabel, colorPicker, widthField, heightField, createCompoundButton);
+
+        frame.setAlignment(Pos.CENTER);
+
+        return frame;
+    }
+
     /**
      * Sets up everything related to the UI
      * @return The initialized UI frame
@@ -200,7 +238,10 @@ public class Simulation extends Application {
             addButton.setText("Add new " + (addText == null ? "___" : addText));
         });
 
-        frame.getChildren().addAll(addButton, componentSelector);
+        VBox compoundComponentFrame = initCompoundComponentUI();
+
+        frame.getChildren().addAll(addButton, componentSelector,
+                new Separator(Orientation.HORIZONTAL), compoundComponentFrame);
 
         return frame;
     }
