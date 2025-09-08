@@ -1,5 +1,6 @@
 package base.fundamentals;
 
+import base.components.SignalSource;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -51,6 +52,40 @@ public class SelectionArea {
      */
     public Rectangle getRect() {
         return rect;
+    }
+
+    /**
+     * Getter for this SelectionArea's set of Components which are currently selected
+     * @return The set of all Components being selected by this area
+     */
+    public HashSet<Component> getSelected() {
+        return new HashSet<>(selected);
+    }
+
+    /**
+     * Get the required number of inputs and outputs for the selected Components to fully function
+     * <br>
+     * The number of inputs is the number of non-connected input ports plus the number of signal sources. <br>
+     * The number of outputs is the number of non-connected output ports. <br>
+     * "Non-connected" here means any connection whose endpoint is either non-existent or on a Component not
+     * currently selected.
+     * @return An integer array of length two, [numInputs, numOutputs]
+     */
+    public int[] getSelectedDependencies() {
+        int numInputs = 0, numOutputs = 0;
+        for (Component component : selected) {
+            for (Port port : component.getAllPorts()) {
+                Component connectedComponent = port.getConnectedComponent();
+                if (!selected.contains(connectedComponent)) {
+                    if (port.isInput() || connectedComponent instanceof SignalSource) {
+                        numInputs++;
+                    } else {
+                        numOutputs++;
+                    }
+                }
+            }
+        }
+        return new int[] {numInputs, numOutputs};
     }
 
     /**

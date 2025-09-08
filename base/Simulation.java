@@ -198,6 +198,7 @@ public class Simulation extends Application {
         Button createCompoundButton = new Button("Create new Compound Component from highlighted Components");
         createCompoundButton.setWrapText(true);
         createCompoundButton.setTextAlignment(TextAlignment.CENTER);
+        createCompoundButton.setOnAction(e -> new CompoundComponent(selection));
 
         frame.getChildren().addAll(nameField, colorLabel, colorPicker, widthField, heightField, createCompoundButton);
 

@@ -1,7 +1,10 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.SelectionArea;
 import javafx.scene.paint.Color;
+
+import java.util.HashSet;
 
 public class CompoundComponent extends Component {
     /** The default width of a CompoundComponent */
@@ -15,8 +18,24 @@ public class CompoundComponent extends Component {
     /** The default Color of the Text displayed on this CompoundComponent */
     private final static Color DEFAULT_TEXT_COLOR = Color.WHITE;
 
-    public CompoundComponent(double x, double y) {
-        super(x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_COLOR, 0, 0,
-                DEFAULT_TEXT, DEFAULT_TEXT_COLOR);
+    private final HashSet<Component> contents;
+
+    private CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
+                              Color color, int[] IOCounts, String name) {
+        super(x, y, width, height, color, IOCounts[0], IOCounts[1], name, DEFAULT_TEXT_COLOR);
+        this.contents = selection.getSelected();
+    }
+
+    public CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
+                             Color color, String name) {
+        this(selection, x, y, width, height, color, selection.getSelectedDependencies(), name);
+    }
+
+    public CompoundComponent(SelectionArea selection, double x, double y) {
+        this(selection, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_COLOR, DEFAULT_TEXT);
+    }
+
+    public CompoundComponent(SelectionArea selection) {
+        this(selection, 1,1);
     }
 }

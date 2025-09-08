@@ -94,6 +94,22 @@ public class Connection {
     }
 
     /**
+     * Get the Port this Connection is receiving signals from
+     * @return The Port this Connection is receiving signals from
+     */
+    public Port getSourcePort() {
+        return sourcePort;
+    }
+
+    /**
+     * Get the Port this Connection is sending signals to
+     * @return The Port this Connection is sending signals to
+     */
+    public Port getDestPort() {
+        return destPort;
+    }
+
+    /**
      * Remove this Connection from the display and use by its Ports
      */
     public void remove() {

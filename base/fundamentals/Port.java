@@ -137,6 +137,18 @@ public class Port {
     }
 
     /**
+     * Get the Component this Port is connected to. Returns Null if this Port is not connected to any other Component
+     * @return The Component this Port is connected to
+     */
+    public Component getConnectedComponent() {
+        if (isInput()) {
+            return connection.getSourcePort().getConnectedComponent();
+        } else {
+            return connection.getDestPort().getConnectedComponent();
+        }
+    }
+
+    /**
      * Get whether this Port is connected to another Port
      * @return Whether this Port is connected to another Port
      */
