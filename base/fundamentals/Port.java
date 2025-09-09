@@ -137,15 +137,26 @@ public class Port {
     }
 
     /**
+     * Get the Component this Port is a part of
+     * @return The Component this Port is a part of
+     */
+    public Component getParent() {
+        return parent;
+    }
+
+    /**
      * Get the Component this Port is connected to. Returns Null if this Port is not connected to any other Component
-     * @return The Component this Port is connected to
+     * @return The Component where this Port's Connection's other end is
      */
     public Component getConnectedComponent() {
-        if (isInput()) {
-            return connection.getSourcePort().getConnectedComponent();
-        } else {
-            return connection.getDestPort().getConnectedComponent();
+        if (isConnected()){
+            if (isInput()) {
+                return connection.getSourcePort().getParent();
+            } else {
+                return connection.getDestPort().getParent();
+            }
         }
+        return null;
     }
 
     /**

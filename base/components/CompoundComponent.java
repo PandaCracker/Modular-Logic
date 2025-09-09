@@ -5,6 +5,7 @@ import base.fundamentals.SelectionArea;
 import javafx.scene.paint.Color;
 
 import java.util.HashSet;
+import java.util.TreeSet;
 
 public class CompoundComponent extends Component {
     /** The default width of a CompoundComponent */
@@ -18,24 +19,38 @@ public class CompoundComponent extends Component {
     /** The default Color of the Text displayed on this CompoundComponent */
     private final static Color DEFAULT_TEXT_COLOR = Color.WHITE;
 
-    private final HashSet<Component> contents;
+    private final TreeSet<Component> contents;
 
     private CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
-                              Color color, int[] IOCounts, String name) {
-        super(x, y, width, height, color, IOCounts[0], IOCounts[1], name, DEFAULT_TEXT_COLOR);
+                              Color color, int numInputs, int numOutputs, String name) {
+        super(x, y, width, height, color, numInputs, numOutputs, name, DEFAULT_TEXT_COLOR);
         this.contents = selection.getSelected();
+
+        getRect().setOnMouseClicked(e -> System.out.println(contents));
     }
 
-    public CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
-                             Color color, String name) {
-        this(selection, x, y, width, height, color, selection.getSelectedDependencies(), name);
+    public static void makeCompoundComponent(SelectionArea selection, String widthStr, String heightStr,
+                                                   Color color, String name) {
+        double width = widthStr.isBlank() ? DEFAULT_WIDTH : Double.parseDouble(widthStr);
+        double height = heightStr.isBlank() ? DEFAULT_HEIGHT : Double.parseDouble(heightStr);
+        int[] IOCounts = selection.getSelectedDependencies();
+        name = name.isBlank() ? DEFAULT_TEXT : name;
+
+        new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name);
     }
 
-    public CompoundComponent(SelectionArea selection, double x, double y) {
-        this(selection, x, y, DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_COLOR, DEFAULT_TEXT);
+    private void assignOutsidePorts() {
+
     }
 
-    public CompoundComponent(SelectionArea selection) {
-        this(selection, 1,1);
+    @Override
+    public void update() {
+        super.update();
+    }
+
+    @Override
+    public String toString() {
+        return "Compound " + super.toString() + " with " + getNumInputs() + " ins, "
+                + getNumOutputs() + " outs";
     }
 }

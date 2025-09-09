@@ -20,7 +20,7 @@ import java.util.Arrays;
  *
  * @author Lucas Peterson
  */
-public abstract class Component {
+public abstract class Component implements Comparable<Component>{
     /** Pane which holds every Shape being displayed on screen */
     private static Pane displayPane;
 
@@ -364,5 +364,14 @@ public abstract class Component {
     @Override
     public int hashCode() {
         return rect.hashCode();
+    }
+
+    @Override
+    public int compareTo(Component o) {
+        int res = (int) (rect.getY() - o.getRect().getY());
+        if (res == 0) {
+            res = (int) (rect.getX() - o.getRect().getX());
+        }
+        return res;
     }
 }

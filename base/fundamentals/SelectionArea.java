@@ -1,6 +1,7 @@
 package base.fundamentals;
 
 import base.components.SignalSource;
+import com.sun.source.tree.Tree;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -9,6 +10,7 @@ import javafx.scene.shape.Rectangle;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * An area dragged out which selects some number of screen elements.<br>
@@ -25,7 +27,11 @@ public class SelectionArea {
     /** The coordinates of the anchored corner, where the click-drag started */
     private final double[] anchor;
 
-    private final HashSet<Component> selected;
+    /**
+     * An ordered set of all selected Components. Order is top to bottom on the screen,
+     * w/ ties broken going left to right
+     */
+    private final TreeSet<Component> selected;
 
     /**
      * Creates a new SelectionArea with an anchored corner
@@ -43,7 +49,7 @@ public class SelectionArea {
         anchor[0] = anchorX;
         anchor[1] = anchorY;
 
-        this.selected = new HashSet<>();
+        this.selected = new TreeSet<>();
     }
 
     /**
@@ -58,8 +64,11 @@ public class SelectionArea {
      * Getter for this SelectionArea's set of Components which are currently selected
      * @return The set of all Components being selected by this area
      */
-    public HashSet<Component> getSelected() {
-        return new HashSet<>(selected);
+    public TreeSet<Component> getSelected() {
+        TreeSet<Component> deepCopy = new TreeSet<>();
+        for (Component component : selected) {
+            // TODO: Figure out how to create internal copies of components for Compounds
+        }
     }
 
     /**
@@ -76,8 +85,10 @@ public class SelectionArea {
         for (Component component : selected) {
             for (Port port : component.getAllPorts()) {
                 Component connectedComponent = port.getConnectedComponent();
-                if (!selected.contains(connectedComponent)) {
-                    if (port.isInput() || connectedComponent instanceof SignalSource) {
+                boolean portNotConnected = connectedComponent == null;
+                boolean portConnectedOutsideSelection = !portNotConnected && !selected.contains(connectedComponent);
+                if (portNotConnected || portConnectedOutsideSelection) {
+                    if (port.isInput()) {
                         numInputs++;
                     } else {
                         numOutputs++;

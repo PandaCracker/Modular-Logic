@@ -10,6 +10,7 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.input.MouseEvent;
@@ -133,7 +134,7 @@ public class Simulation extends Application {
 
         display.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
-            if (getClickedOn(e, display) == null) {
+            if (getClickedOn(e, display) == null && e.getButton() == MouseButton.PRIMARY) {
                 selecting = true;
                 selection.startNew(e.getX(), e.getY());
             }
@@ -198,7 +199,15 @@ public class Simulation extends Application {
         Button createCompoundButton = new Button("Create new Compound Component from highlighted Components");
         createCompoundButton.setWrapText(true);
         createCompoundButton.setTextAlignment(TextAlignment.CENTER);
-        createCompoundButton.setOnAction(e -> new CompoundComponent(selection));
+        createCompoundButton.setOnAction(e -> {
+            CompoundComponent.makeCompoundComponent(
+                    selection,
+                    widthField.getText(),
+                    heightField.getText(),
+                    colorPicker.getValue(),
+                    nameField.getText());
+            selection.getSelected().forEach(Component::remove);
+        });
 
         frame.getChildren().addAll(nameField, colorLabel, colorPicker, widthField, heightField, createCompoundButton);
 
