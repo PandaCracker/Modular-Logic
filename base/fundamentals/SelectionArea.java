@@ -1,14 +1,10 @@
 package base.fundamentals;
 
-import base.components.SignalSource;
-import com.sun.source.tree.Tree;
 import javafx.geometry.Bounds;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.TreeSet;
 

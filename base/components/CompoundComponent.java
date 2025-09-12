@@ -4,7 +4,6 @@ import base.fundamentals.Component;
 import base.fundamentals.SelectionArea;
 import javafx.scene.paint.Color;
 
-import java.util.HashSet;
 import java.util.TreeSet;
 
 public class CompoundComponent extends Component {

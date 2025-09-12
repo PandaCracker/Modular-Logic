@@ -1,18 +1,20 @@
 package base.fundamentals;
 
 import base.Simulation;
-import base.events.AddChildrenEvent;
-import base.events.DeleteChildrenEvent;
+import base.events.*;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -92,22 +94,25 @@ public abstract class Component implements Comparable<Component>{
      * @param defaultText The text String to display on the Component
      * @param defaultTextColor The default Color of the Component's text
      */
-    public Component(double x, double y, double width, double height, Color color, int numInputs, int numOutputs,
+    public Component(double x, double y, double width, double height, Paint color, int numInputs, int numOutputs,
                      String defaultText, Color defaultTextColor) {
         // Set up basic Rectangle fields
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
         rect.setY(y * Simulation.CELL_SIZE);
 
+        // Rectangle corners
         rect.setArcWidth(ROUND_CORNER_WIDTH);
         rect.setArcHeight(ROUND_CORNER_HEIGHT);
 
+        // Rectangle color and borders
         rect.setFill(color);
         rect.setStroke(BORDER_COLOR);
         rect.setStrokeWidth(STROKE_WIDTH);
 
+        // Save this Component object in the Rect for referencing on the Pane
         rect.setUserData(this);
-
+        // Give this rect a unique id
         rect.setId(String.valueOf(ID_COUNTER));
         ID_COUNTER++;
 
@@ -126,10 +131,12 @@ public abstract class Component implements Comparable<Component>{
         this.dragOffsetX = 0;
         this.dragOffsetY = 0;
 
+        // Init multiselect vars
         this.selected = false;
         this.selector = null;
         this.canEcho = true;
 
+        // Add this to the screen
         Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
@@ -146,6 +153,7 @@ public abstract class Component implements Comparable<Component>{
         }
 
         // Input Handlers
+        // Delete on left click
         rect.setOnMousePressed(e -> {
             if (e.getButton() == MouseButton.SECONDARY) {
                 remove();
@@ -155,6 +163,7 @@ public abstract class Component implements Comparable<Component>{
             }
         });
 
+        // Save drag start pos on drag start
         rect.setOnDragDetected(e -> {
             inDrag = true;
             dragOffsetX = e.getX() - rect.getX();
@@ -165,6 +174,7 @@ public abstract class Component implements Comparable<Component>{
             }
         });
 
+        // Move on mouse drag
         rect.setOnMouseDragged(e -> {
             if (inDrag) {
                 move(e.getX() - dragOffsetX, e.getY() - dragOffsetY);
@@ -174,6 +184,7 @@ public abstract class Component implements Comparable<Component>{
             }
         });
 
+        // Stop dragging when mouse released
         rect.setOnMouseReleased(e -> {
             if (inDrag) {
                 move(e.getX() - dragOffsetX, e.getY() - dragOffsetY);
@@ -239,21 +250,6 @@ public abstract class Component implements Comparable<Component>{
     }
 
     /**
-     * Set this Component to be able to echo MouseEvents to other selected Components
-     */
-    public void allowEcho() {
-        canEcho = true;
-    }
-
-    /**
-     * Stop this Component from echoing MouseEvents to other selected Components.
-     * Should be called whenever receiving an echo to avoid feedback loops.
-     */
-    public void disallowEcho() {
-        canEcho = false;
-    }
-
-    /**
      * Set the Component's Text Color
      * @param textColor The Color to change the Text Color to
      */
@@ -310,13 +306,27 @@ public abstract class Component implements Comparable<Component>{
      * Components
      */
     public void remove() {
-        if (rect.getParent() == null) {
-        } else {
+        if (rect.getParent() != null) {
             Event.fireEvent(rect.getParent(), new DeleteChildrenEvent(rect, text));
             for (Port port : getAllPorts()) {
                 port.remove();
             }
         }
+    }
+
+    /**
+     * Set this Component to be able to echo MouseEvents to other selected Components
+     */
+    public void allowEcho() {
+        canEcho = true;
+    }
+
+    /**
+     * Stop this Component from echoing MouseEvents to other selected Components.
+     * Should be called whenever receiving an echo to avoid feedback loops.
+     */
+    public void disallowEcho() {
+        canEcho = false;
     }
 
     /**
@@ -340,11 +350,37 @@ public abstract class Component implements Comparable<Component>{
     }
 
     /**
+     * Returns a deep copy of this Component, excluding any existing Connections
+     * @return A new Component with the same update method as the caller
+     */
+    public Component copy() {
+        try {
+            Method updateMethod = getClass().getDeclaredMethod("update");
+            return new Component(0.0, 0.0, rect.getWidth(), rect.getHeight(), rect.getFill(),
+                    numInputs, numOutputs, text.getText(), (Color) text.getFill()) {
+                @Override
+                public void update() {
+                    try {
+                        updateMethod.invoke(this);
+                    } catch (InvocationTargetException ite) {
+                        System.out.println("Copied update method threw exception");
+                    } catch (IllegalAccessException iae) {
+                        System.out.println("Copied update method not accessible");
+                    }
+                }
+            };
+        } catch (NoSuchMethodException nsme) {
+            System.out.println("Attempted to copy Component w/out update method");
+        }
+        return null;
+    }
+
+    /**
      * Method which is called once per logic cycle to progress a Component's state.
      * <br>
      * Should implement each Component's unique logical functionality
      */
-    public void update() {}
+    public abstract void update();
 
     /**
      * Provides a baseline String representation of a Component.
