@@ -14,7 +14,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -23,8 +22,6 @@ import java.util.Arrays;
  * @author Lucas Peterson
  */
 public abstract class Component implements Comparable<Component>{
-    /** Pane which holds every Shape being displayed on screen */
-    private static Pane displayPane;
 
     /** Counter which gives each Component and/or Port a unique ID */
     private static int ID_COUNTER = 0;
@@ -46,6 +43,8 @@ public abstract class Component implements Comparable<Component>{
     /** Distance between the center of the Text's LayoutBounds and its origin for the current Text*/
     private double halfTextWidth;
 
+    /** Pane which this Component will be displayed on */
+    private Pane displayPane;
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
 
@@ -75,14 +74,6 @@ public abstract class Component implements Comparable<Component>{
     private boolean canEcho;
 
     /**
-     * Set the displayPane that all Components will add their Shapes to
-     * @param pane The Pane to be the displayPane
-     */
-    public static void setDisplayPane(Pane pane) {
-        displayPane = pane;
-    }
-
-    /**
      * Set up the basic fields of a new object extending from Component
      * @param x The x position (in cells) of where the Component's top left corner will be
      * @param y The y position (in cells) of where the Component's top left corner will be
@@ -91,11 +82,12 @@ public abstract class Component implements Comparable<Component>{
      * @param color The Color of the Component
      * @param numInputs The number of input Ports the Component will have
      * @param numOutputs The number of output Ports the Component will have
-     * @param defaultText The text String to display on the Component
+     * @param defaultText The default text String to display on the Component
      * @param defaultTextColor The default Color of the Component's text
+     * @param displayPane The Pane on which to add the Component
      */
     public Component(double x, double y, double width, double height, Paint color, int numInputs, int numOutputs,
-                     String defaultText, Color defaultTextColor) {
+                     String defaultText, Color defaultTextColor, Pane displayPane) {
         // Set up basic Rectangle fields
         this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
         rect.setX(x * Simulation.CELL_SIZE);
@@ -137,6 +129,7 @@ public abstract class Component implements Comparable<Component>{
         this.canEcho = true;
 
         // Add this to the screen
+        this.displayPane = displayPane;
         Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
@@ -194,7 +187,6 @@ public abstract class Component implements Comparable<Component>{
                 }
             }
         });
-
     }
 
     /**
@@ -295,6 +287,7 @@ public abstract class Component implements Comparable<Component>{
         x = Math.max( Math.min(x, maxInBoundsX), minInBoundsX );
         y = Math.max( Math.min(y, maxInBoundsY), bounds.getMinY() );
 
+        // Actually move the Component
         rect.setX(x);
         rect.setY(y);
         centerAlignText();
@@ -353,26 +346,17 @@ public abstract class Component implements Comparable<Component>{
      * Returns a deep copy of this Component, excluding any existing Connections
      * @return A new Component with the same update method as the caller
      */
-    public Component copy() {
+    public Component copy(Pane displayPane) {
+        Rectangle rect = getRect();
         try {
-            Method updateMethod = getClass().getDeclaredMethod("update");
-            return new Component(0.0, 0.0, rect.getWidth(), rect.getHeight(), rect.getFill(),
-                    numInputs, numOutputs, text.getText(), (Color) text.getFill()) {
-                @Override
-                public void update() {
-                    try {
-                        updateMethod.invoke(this);
-                    } catch (InvocationTargetException ite) {
-                        System.out.println("Copied update method threw exception");
-                    } catch (IllegalAccessException iae) {
-                        System.out.println("Copied update method not accessible");
-                    }
-                }
-            };
-        } catch (NoSuchMethodException nsme) {
-            System.out.println("Attempted to copy Component w/out update method");
+            return getClass()
+                    .getDeclaredConstructor(Double.class, Double.class, Pane.class)
+                    .newInstance(rect.getX(), rect.getY(), displayPane);
+        } catch (NoSuchMethodException | InstantiationException |
+                 IllegalAccessException | InvocationTargetException e) {
+            System.out.println("Exception during copying process: " + e.getLocalizedMessage());
+            return null;
         }
-        return null;
     }
 
     /**
@@ -394,19 +378,37 @@ public abstract class Component implements Comparable<Component>{
      */
     @Override
     public String toString() {
-        return "Component at " + rect.getX() + ", " + rect.getY();
+        return text.getText() + " component at " + rect.getX() + ", " + rect.getY();
     }
 
+    /**
+     * Gives a hashcode for this Component <br>
+     * Hashcode is based on its Rectangle, so two components with the same Rectangle are considered equal.
+     * @return A hashcode for this Component
+     */
     @Override
     public int hashCode() {
         return rect.hashCode();
     }
 
+    /**
+     * Defines a natural ordering of Components.
+     * Components which are placed higher on the screen are defined as less than another Component.
+     * A Component which is of equal y-value to another Component but lesser x-value is defined as less than.
+     * Components which have exactly the same positioning are ordered by ID, smallest to largest.
+     * @param o the object to be compared.
+     * @return A negative integer if the other Component is less than this Component, 0 if equal, and a positive
+     *      integer otherwise
+     */
     @Override
     public int compareTo(Component o) {
-        int res = (int) (rect.getY() - o.getRect().getY());
+        Rectangle otherRect = o.getRect();
+        int res = (int) (rect.getY() - otherRect.getY());
         if (res == 0) {
-            res = (int) (rect.getX() - o.getRect().getX());
+            res = (int) (rect.getX() - otherRect.getX());
+        }
+        if (res == 0) {
+            res = Integer.parseInt(rect.getId()) - Integer.parseInt(otherRect.getId());
         }
         return res;
     }

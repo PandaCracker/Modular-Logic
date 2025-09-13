@@ -1,6 +1,8 @@
 package base.components;
 
+import base.Simulation;
 import base.fundamentals.Component;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -32,16 +34,17 @@ public class Light extends Component {
      * Create a new Light Component
      * @param x The x coordinate (in cells) of the new Light
      * @param y The y coordinate (in cells) of the new light
+     * @param displayPane The Pane on which to display the Light
      */
-    public Light(double x, double y) {
-        super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0, OFF_TEXT, OFF_TEXT_COLOR);
+    public Light(double x, double y, Pane displayPane) {
+        super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0, OFF_TEXT, OFF_TEXT_COLOR, displayPane);
     }
 
     /**
-     * Create a new Light at the top right of the display screen
+     * Create a new Light at the top-right corner of the main screen
      */
     public Light() {
-        this(1,1);
+        this(1, 1, Simulation.MAIN_PANE);
     }
 
     @Override

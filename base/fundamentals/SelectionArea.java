@@ -61,10 +61,7 @@ public class SelectionArea {
      * @return The set of all Components being selected by this area
      */
     public TreeSet<Component> getSelected() {
-        TreeSet<Component> deepCopy = new TreeSet<>();
-        for (Component component : selected) {
-            // TODO: Figure out how to create internal copies of components for Compounds
-        }
+        return selected;
     }
 
     /**

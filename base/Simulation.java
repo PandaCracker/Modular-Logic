@@ -42,6 +42,9 @@ public class Simulation extends Application {
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
 
+    /** Main top-level display pane */
+    public final static Pane MAIN_PANE = new Pane();
+
     /** Number of cells wide the board currently is */
     private final int boardWidth;
     /** Number of cells tall the board currently is */
@@ -71,26 +74,15 @@ public class Simulation extends Application {
         childrenList.addAll(Arrays.asList(addEvent.getChildrenToAdd()));
     }
 
-    private void addInitialComponents() {
-        new SignalSource(2, 5);
-        new Splitter(3.5, 5);
-        new SignalSource(2, 7);
-        new Splitter(3.5, 7);
-        new AND(5, 5);
-        new OR(5, 10);
-        new Light(9, 6);
-        new Light(9, 11);
-    }
-
     /**
      * Get the Object clicked on by a MouseEvent, if any
+     *
      * @param me The MouseEvent in question. Assumed to be targeted at the displayPane
-     * @param displayPane The Pane the MouseEvent is generated for
      * @return The Object, if any, on the display pane which was clicked on
      */
-    private Object getClickedOn(MouseEvent me, Pane displayPane) {
-        List<Node> children = displayPane.getChildren();
-        if (displayPane.contains(me.getX(), me.getY())) {
+    private Object getClickedOn(MouseEvent me) {
+        List<Node> children = MAIN_PANE.getChildren();
+        if (MAIN_PANE.contains(me.getX(), me.getY())) {
             for (Node node : children) {
                 if (node.getLayoutBounds().contains(me.getX(), me.getY())) {
                     return node.getUserData();
@@ -113,41 +105,39 @@ public class Simulation extends Application {
     }
 
     /**
-     * Sets up everything related to the main display window
-     * @return The initialized and update-driven Pane object
+     * Initializes everything related to the main display window
      */
-    private Pane initDisplay() {
-        final Pane display = new Pane();
-        List<Node> children = display.getChildren();
+    private void initDisplay() {
+        List<Node> children = MAIN_PANE.getChildren();
 
-        display.setPrefWidth(boardWidth * CELL_SIZE);
-        display.setPrefHeight(boardHeight * CELL_SIZE);
+        MAIN_PANE.setPrefWidth(boardWidth * CELL_SIZE);
+        MAIN_PANE.setPrefHeight(boardHeight * CELL_SIZE);
 
 
         // Multi-selection handling
-        display.setOnDragDetected(e -> {
+        MAIN_PANE.setOnDragDetected(e -> {
             // Know a multi-select is happening
             if (selecting) {
                 children.add(selection.getRect());
             }
         });
 
-        display.setOnMousePressed(e -> {
+        MAIN_PANE.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
-            if (getClickedOn(e, display) == null && e.getButton() == MouseButton.PRIMARY) {
+            if (getClickedOn(e) == null && e.getButton() == MouseButton.PRIMARY) {
                 selecting = true;
                 selection.startNew(e.getX(), e.getY());
             }
         });
 
-        display.setOnMouseDragged(e -> {
+        MAIN_PANE.setOnMouseDragged(e -> {
             if (selecting) {
                 List<Component> components = componentsFromChildren(children);
                 selection.expandSelection(e.getX(), e.getY(), components);
             }
         });
 
-        display.setOnMouseReleased(e -> {
+        MAIN_PANE.setOnMouseReleased(e -> {
             if (selecting) {
                 children.remove(selection.getRect());
                 selection.done();
@@ -156,21 +146,16 @@ public class Simulation extends Application {
         });
 
         // Set up Component addition/removal processes
-        Component.setDisplayPane(display);
-        display.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
-        display.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
-
-        addInitialComponents();
+        MAIN_PANE.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
+        MAIN_PANE.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> componentsFromChildren(display.getChildren()).forEach(Component::update)
+                e -> componentsFromChildren(MAIN_PANE.getChildren()).forEach(Component::update)
         ));
 
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
-
-        return display;
     }
 
     TextArea createTextArea(String promptText) {
@@ -185,8 +170,8 @@ public class Simulation extends Application {
      * Sets up everything related to the Compound Component UI elements
      * @return The initialized VBox UI frame
      */
-    private VBox initCompoundComponentUI() {
-        VBox frame = new VBox();
+    private VBox initAddCompoundComponentUI() {
+        VBox addCompoundComponentUI = new VBox();
 
         TextArea nameField = createTextArea("Enter Compound Component Name, e.g. XOR");
 
@@ -205,29 +190,26 @@ public class Simulation extends Application {
                     widthField.getText(),
                     heightField.getText(),
                     colorPicker.getValue(),
-                    nameField.getText());
+                    nameField.getText(),
+                    MAIN_PANE);
             selection.getSelected().forEach(Component::remove);
         });
 
-        frame.getChildren().addAll(nameField, colorLabel, colorPicker, widthField, heightField, createCompoundButton);
+        addCompoundComponentUI.getChildren().addAll(
+                nameField, colorLabel, colorPicker, widthField, heightField, createCompoundButton);
+        addCompoundComponentUI.setAlignment(Pos.CENTER);
 
-        frame.setAlignment(Pos.CENTER);
-
-        return frame;
+        return addCompoundComponentUI;
     }
 
     /**
-     * Sets up everything related to the UI
-     * @return The initialized UI frame
+     * Creates a VBox which holds UI elements to add new basic Components to the current Screen
+     * @return The VBox described above
      */
-    private VBox initAddUI() {
-        VBox frame = new VBox();
-        frame.setAlignment(Pos.CENTER);
-        frame.setPrefWidth(PREF_UI_WIDTH);
-        frame.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
-
-        ChoiceBox<String> componentSelector = new ChoiceBox<>();
+    private VBox initAddComponentUI() {
+        // TODO clean up this to try and get class variables to avoid the switches and duplicate literal strings
         Button addButton = new Button("Add new ____");
+        ChoiceBox<String> componentSelector = new ChoiceBox<>();
 
         addButton.setOnAction(ae -> {
             String addText = componentSelector.getValue();
@@ -248,10 +230,29 @@ public class Simulation extends Application {
             addButton.setText("Add new " + (addText == null ? "___" : addText));
         });
 
-        VBox compoundComponentFrame = initCompoundComponentUI();
+        VBox addComponentUI = new VBox(addButton, componentSelector);
+        addComponentUI.setAlignment(Pos.CENTER);
 
-        frame.getChildren().addAll(addButton, componentSelector,
-                new Separator(Orientation.HORIZONTAL), compoundComponentFrame);
+        return addComponentUI;
+    }
+
+    /**
+     * Sets up everything related to the UI
+     * @return The initialized UI frame
+     */
+    private VBox initAddUI() {
+        VBox frame = new VBox();
+        frame.setAlignment(Pos.CENTER);
+        frame.setPrefWidth(PREF_UI_WIDTH);
+        frame.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
+
+        VBox addComponentUI = initAddComponentUI();
+        VBox addCompoundComponentUI = initAddCompoundComponentUI();
+
+        frame.getChildren().addAll(
+                addComponentUI,
+                new Separator(Orientation.HORIZONTAL),
+                addCompoundComponentUI);
 
         return frame;
     }
@@ -267,11 +268,11 @@ public class Simulation extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Pane display = initDisplay();
+        initDisplay();
         VBox addUI = initAddUI();
 
         BorderPane window = new BorderPane();
-        window.setCenter(display);
+        window.setCenter(MAIN_PANE);
         window.setLeft(addUI);
 
         Scene scene = new Scene(window);

@@ -1,6 +1,8 @@
 package base.components;
 
+import base.Simulation;
 import base.fundamentals.Component;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -21,16 +23,17 @@ public class Splitter extends Component {
      * Create a new Splitter
      * @param x The x coordinate (in cells) of the new Splitter
      * @param y The y coordinate (in cells) of the new Splitter
+     * @param displayPane The Pane to display this Splitter on
      */
-    public Splitter(double x, double y) {
-        super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null);
+    public Splitter(double x, double y, Pane displayPane) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null, displayPane);
     }
 
     /**
-     * Create a new Splitter at the top right of the display screen
+     * Create a new Splitter at the top right of the main screen
      */
     public Splitter() {
-        this(1, 1);
+        this(1, 1, Simulation.MAIN_PANE);
     }
 
     @Override

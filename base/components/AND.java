@@ -1,6 +1,8 @@
 package base.components;
 
+import base.Simulation;
 import base.fundamentals.Component;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -25,16 +27,17 @@ public class AND extends Component {
      * Create a new AND Component
      * @param x The x coordinate (in cells) of the new AND
      * @param y The y coordinate (in cells) of the new AND
+     * @param displayPane The pane to display this AND on
      */
-    public AND(double x, double y) {
-        super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR);
+    public AND(double x, double y, Pane displayPane) {
+        super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR, displayPane);
     }
 
     /**
-     * Create a new AND at the top right of the display screen
+     * Create a new AND at the top right corner of the main screen
      */
     public AND() {
-        this(1,1);
+        this(1, 1, Simulation.MAIN_PANE);
     }
 
     @Override
@@ -42,19 +45,5 @@ public class AND extends Component {
         boolean in1 = getInputPort(0).isOn();
         boolean in2 = getInputPort(1).isOn();
         getOutputPort(0).setState(in1 && in2);
-    }
-
-    /**
-     * Produces a String representation of this AND
-     * Gives a String of the form:
-     * <p>
-     *     AND Component at [X], [Y]
-     * </p>
-     * Where X and Y are the pixel coordinates of this AND
-     * @return The String described above
-     */
-    @Override
-    public String toString() {
-        return "AND " + super.toString();
     }
 }

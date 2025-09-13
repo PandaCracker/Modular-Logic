@@ -1,7 +1,9 @@
 package base.components;
 
+import base.Simulation;
 import base.fundamentals.Component;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -35,19 +37,20 @@ public class SignalSource extends Component {
      * Create a new Signal Source
      * @param x The x position (in cells) of the new Signal Source
      * @param y The y position (in cells) of the new Signal Source
+     * @param displayPane the Pane to display this Signal Source on
      */
-    public SignalSource(double x, double y) {
-        super(x, y, WIDTH, HEIGHT, OFF_COLOR, 0, 1, OFF_TEXT, OFF_TEXT_COLOR);
+    public SignalSource(double x, double y, Pane displayPane) {
+        super(x, y, WIDTH, HEIGHT, OFF_COLOR, 0, 1, OFF_TEXT, OFF_TEXT_COLOR, displayPane);
         this.on = false;
 
         getRect().setOnMouseClicked(this::toggle);
     }
 
     /**
-     * Create a new SignalSource at the top right of the display screen
+     * Create a new SignalSource at the top right of the main screen
      */
     public SignalSource() {
-        this(1,1);
+        this(1,1, Simulation.MAIN_PANE);
     }
 
     /**
