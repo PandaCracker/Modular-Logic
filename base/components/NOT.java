@@ -10,10 +10,10 @@ import javafx.scene.paint.Color;
  */
 public class NOT extends Component {
 
-    /** The width of an NOT Component */
-    private final static double WIDTH = 1;
-    /** The height of an NOT Component */
-    private final static double HEIGHT = 1;
+    /** The width of an NOT Component in pixels*/
+    private final static double WIDTH = 60;
+    /** The height of an NOT Component in pixels*/
+    private final static double HEIGHT = 60;
     /** The color of every NOT Component */
     private final static Color COLOR = Color.RED;
     /** The String displayed on every OR Component */
@@ -23,8 +23,8 @@ public class NOT extends Component {
 
     /**
      * Create a new NOT Component
-     * @param x The x coordinate (in cells) of the NOT
-     * @param y The y coordinate (in cells) of the NOT
+     * @param x The x coordinate (in pixels) of the NOT
+     * @param y The y coordinate (in pixels) of the NOT
      * @param displayPane The pane to display this AND on
      */
     public NOT(double x, double y, Pane displayPane) {
@@ -35,7 +35,7 @@ public class NOT extends Component {
      * Create a new NOT Component at the top right corner of the main screen
      */
     public NOT() {
-        this(1, 1, Simulation.MAIN_PANE);
+        this(60, 60, Simulation.MAIN_PANE);
     }
 
     @Override

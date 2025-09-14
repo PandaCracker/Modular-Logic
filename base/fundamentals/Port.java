@@ -19,7 +19,7 @@ public class Port {
     public enum PortType {INPUT, OUTPUT}
 
     /** The radius of every Port, in pixels */
-    public static double RADIUS = Simulation.CELL_SIZE / 6;
+    public static double RADIUS = 10;
     /** The Color of every Port */
     private final static Color COLOR = Color.SLATEGRAY;
 

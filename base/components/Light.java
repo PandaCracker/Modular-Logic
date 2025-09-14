@@ -12,10 +12,10 @@ import javafx.scene.paint.Color;
  */
 public class Light extends Component {
 
-    /** The width of a Light in cells */
-    private final static double WIDTH = 1;
-    /** The height of a Light in cells */
-    private final static double HEIGHT = 1;
+    /** The width of a Light in pixels */
+    private final static double WIDTH = 60;
+    /** The height of a Light in pixels */
+    private final static double HEIGHT = 60;
     /** The Color of an active Light */
     private final static Color ON_COLOR = Color.YELLOW;
     /** The String displayed on an active Light */
@@ -32,8 +32,8 @@ public class Light extends Component {
 
     /**
      * Create a new Light Component
-     * @param x The x coordinate (in cells) of the new Light
-     * @param y The y coordinate (in cells) of the new light
+     * @param x The x coordinate (in pixels) of the new Light
+     * @param y The y coordinate (in pixels) of the new light
      * @param displayPane The Pane on which to display the Light
      */
     public Light(double x, double y, Pane displayPane) {
@@ -44,7 +44,7 @@ public class Light extends Component {
      * Create a new Light at the top-right corner of the main screen
      */
     public Light() {
-        this(1, 1, Simulation.MAIN_PANE);
+        this(60, 60, Simulation.MAIN_PANE);
     }
 
     @Override

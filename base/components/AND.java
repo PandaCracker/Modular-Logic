@@ -12,10 +12,10 @@ import javafx.scene.paint.Color;
  */
 public class AND extends Component {
 
-    /** The width of an AND Component */
-    private final static double WIDTH = 1.5;
-    /** The height of an AND Component */
-    private final static double HEIGHT = 2;
+    /** The width of an AND Component in pixels */
+    private final static double WIDTH = 90;
+    /** The height of an AND Component in pixels */
+    private final static double HEIGHT = 120;
     /** The color of every AND Component */
     private final static Color COLOR = Color.RED;
     /** The String displayed on every AND Component */
@@ -25,8 +25,8 @@ public class AND extends Component {
 
     /**
      * Create a new AND Component
-     * @param x The x coordinate (in cells) of the new AND
-     * @param y The y coordinate (in cells) of the new AND
+     * @param x The x coordinate (in pixels) of the new AND
+     * @param y The y coordinate (in pixels) of the new AND
      * @param displayPane The pane to display this AND on
      */
     public AND(double x, double y, Pane displayPane) {
@@ -37,7 +37,7 @@ public class AND extends Component {
      * Create a new AND at the top right corner of the main screen
      */
     public AND() {
-        this(1, 1, Simulation.MAIN_PANE);
+        this(60, 60, Simulation.MAIN_PANE);
     }
 
     @Override

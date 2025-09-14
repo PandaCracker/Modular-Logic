@@ -13,10 +13,10 @@ import javafx.scene.paint.Color;
  */
 public class SignalSource extends Component {
 
-    /** The width of a Signal Source in cells */
-    private final static double WIDTH = 1;
-    /** The height of a Signal Source in cells */
-    private final static double HEIGHT = 1;
+    /** The width of a Signal Source in pixels */
+    private final static double WIDTH = 60;
+    /** The height of a Signal Source in pixels */
+    private final static double HEIGHT = 60;
     /** The color of an active Signal Source */
     private final static Color ON_COLOR = Color.LIGHTGREEN;
     /** The Sting displayed on an active Signal Source */
@@ -35,8 +35,8 @@ public class SignalSource extends Component {
 
     /**
      * Create a new Signal Source
-     * @param x The x position (in cells) of the new Signal Source
-     * @param y The y position (in cells) of the new Signal Source
+     * @param x The x position (in pixels) of the new Signal Source
+     * @param y The y position (in pixels) of the new Signal Source
      * @param displayPane the Pane to display this Signal Source on
      */
     public SignalSource(double x, double y, Pane displayPane) {
@@ -50,7 +50,7 @@ public class SignalSource extends Component {
      * Create a new SignalSource at the top right of the main screen
      */
     public SignalSource() {
-        this(1,1, Simulation.MAIN_PANE);
+        this(60,60, Simulation.MAIN_PANE);
     }
 
     /**

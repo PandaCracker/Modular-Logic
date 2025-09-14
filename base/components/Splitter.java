@@ -12,17 +12,17 @@ import javafx.scene.paint.Color;
  */
 public class Splitter extends Component {
 
-    /** The width of a Splitter in cells */
-    private final static double WIDTH = 1;
-    /** The height of a Splitter in cells */
-    private final static double HEIGHT = 1.5;
+    /** The width of a Splitter in pixels */
+    private final static double WIDTH = 60;
+    /** The height of a Splitter in pixels */
+    private final static double HEIGHT = 90;
     /** The color of every Splitter */
     private final static Color COLOR = Color.DARKGRAY;
 
     /**
      * Create a new Splitter
-     * @param x The x coordinate (in cells) of the new Splitter
-     * @param y The y coordinate (in cells) of the new Splitter
+     * @param x The x coordinate (in pixels) of the new Splitter
+     * @param y The y coordinate (in pixels) of the new Splitter
      * @param displayPane The Pane to display this Splitter on
      */
     public Splitter(double x, double y, Pane displayPane) {
@@ -33,7 +33,7 @@ public class Splitter extends Component {
      * Create a new Splitter at the top right of the main screen
      */
     public Splitter() {
-        this(1, 1, Simulation.MAIN_PANE);
+        this(60, 60, Simulation.MAIN_PANE);
     }
 
     @Override

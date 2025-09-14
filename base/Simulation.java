@@ -21,19 +21,15 @@ import javafx.util.Duration;
 import java.util.*;
 
 /**
- * Main simulation class
- * <p>
+ * Main simulation class <br>
  * Sets up the Application and holds every Component
- *
  * @author Lucas Peterson
  */
 public class Simulation extends Application {
-    /** Number of pixels one 'cell' is wide and tall */
-    public final static double CELL_SIZE = 60;
     /** Number of cells wide the board is at the start of the simulation */
-    public final static int INIT_BOARD_WIDTH = 15;
+    public final static int INIT_BOARD_WIDTH = 900;
     /** Number of cells tall the board is at the start of the simulation */
-    public final static int INIT_BOARD_HEIGHT = 15;
+    public final static int INIT_BOARD_HEIGHT = 900;
     /** Pixels wide the side UI frame should be */
     public final static int PREF_UI_WIDTH = 225;
     /** Max pixels tall the TextAreas should be */
@@ -42,45 +38,29 @@ public class Simulation extends Application {
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
 
-    /** Main top-level display pane */
+    // TODO see if I can make this private and handle adding through defaults & getter used by Component
+    /** Main top-level display Pane */
     public final static Pane MAIN_PANE = new Pane();
-
-    /** Number of cells wide the board currently is */
-    private final int boardWidth;
-    /** Number of cells tall the board currently is */
-    private final int boardHeight;
+    /** Current display Pane being viewed */
+    private static Pane currentPane = MAIN_PANE;
+    /** Top-level layout object all UI and display objects */
+    private final static BorderPane window = new BorderPane();
 
     /** Whether there is a multi-selection action taking place */
-    private boolean selecting;
+    private static boolean selecting;
     /** The SelectionArea object handling multi-selection */
-    private final SelectionArea selection;
+    private final static SelectionArea selection = new SelectionArea();
+
+    /** Stack of Pane view history, for back-history jumps */
+    private final static Deque<Pane> paneViewStack = new LinkedList<>();
+
 
     /**
-     * Create a new Simulation instance with default width, height, and no components
-     */
-    public Simulation() {
-        this.boardWidth = INIT_BOARD_WIDTH;
-        this.boardHeight = INIT_BOARD_HEIGHT;
-
-        this.selecting = false;
-        this.selection = new SelectionArea(0,0);
-    }
-
-    private void deleteChild(List<Node> childrenList, DeleteChildrenEvent deleteEvent) {
-        childrenList.removeAll(Arrays.asList(deleteEvent.getChildrenToRemove()));
-    }
-
-    private void addChild(List<Node> childrenList, AddChildrenEvent addEvent) {
-        childrenList.addAll(Arrays.asList(addEvent.getChildrenToAdd()));
-    }
-
-    /**
-     * Get the Object clicked on by a MouseEvent, if any
-     *
+     * Get the Object clicked on by a MouseEvent, if any.
      * @param me The MouseEvent in question. Assumed to be targeted at the displayPane
      * @return The Object, if any, on the display pane which was clicked on
      */
-    private Object getClickedOn(MouseEvent me) {
+    private static Object getClickedOn(MouseEvent me) {
         List<Node> children = MAIN_PANE.getChildren();
         if (MAIN_PANE.contains(me.getX(), me.getY())) {
             for (Node node : children) {
@@ -93,11 +73,11 @@ public class Simulation extends Application {
     }
 
     /**
-     * Get a list of all Components in a list of all displayed items
+     * Get a list of every Component from a list of Nodes
      * @param children A list possibly containing Components
      * @return A list of all (if any) Components in the list provided
      */
-    public List<Component> componentsFromChildren(List<Node> children) {
+    public static List<Component> componentsFromChildren(List<Node> children) {
         return children.stream()
                 .filter(n -> n.getUserData() instanceof Component)
                 .map(n -> (Component) n.getUserData())
@@ -107,12 +87,11 @@ public class Simulation extends Application {
     /**
      * Initializes everything related to the main display window
      */
-    private void initDisplay() {
+    private static void initDisplay() {
         List<Node> children = MAIN_PANE.getChildren();
 
-        MAIN_PANE.setPrefWidth(boardWidth * CELL_SIZE);
-        MAIN_PANE.setPrefHeight(boardHeight * CELL_SIZE);
-
+        MAIN_PANE.setPrefWidth(INIT_BOARD_WIDTH);
+        MAIN_PANE.setPrefHeight(INIT_BOARD_HEIGHT);
 
         // Multi-selection handling
         MAIN_PANE.setOnDragDetected(e -> {
@@ -131,6 +110,7 @@ public class Simulation extends Application {
         });
 
         MAIN_PANE.setOnMouseDragged(e -> {
+            // Expand Selection Area
             if (selecting) {
                 List<Component> components = componentsFromChildren(children);
                 selection.expandSelection(e.getX(), e.getY(), components);
@@ -138,6 +118,7 @@ public class Simulation extends Application {
         });
 
         MAIN_PANE.setOnMouseReleased(e -> {
+            // Done selecting more elements, remove selection rect
             if (selecting) {
                 children.remove(selection.getRect());
                 selection.done();
@@ -146,8 +127,12 @@ public class Simulation extends Application {
         });
 
         // Set up Component addition/removal processes
-        MAIN_PANE.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e -> deleteChild(children, e));
-        MAIN_PANE.addEventHandler(AddChildrenEvent.EVENT_TYPE, e -> addChild(children, e));
+        MAIN_PANE.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
+                children.removeAll(Arrays.asList(e.getChildrenToRemove()))
+        );
+        MAIN_PANE.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
+                children.addAll(Arrays.asList(e.getChildrenToAdd()))
+        );
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
@@ -158,7 +143,12 @@ public class Simulation extends Application {
         timeline.play();
     }
 
-    TextArea createTextArea(String promptText) {
+    /**
+     * Creates a new Text area with standard attributes. Helper function for text-entry UIs
+     * @param promptText The prompt text to display before a user starts typing
+     * @return The initialized TextArea
+     */
+    private static TextArea createTextArea(String promptText) {
         TextArea ret = new TextArea();
         ret.setMaxHeight(MAX_TEXT_AREA_HEIGHT);
         ret.setWrapText(true);
@@ -170,13 +160,14 @@ public class Simulation extends Application {
      * Sets up everything related to the Compound Component UI elements
      * @return The initialized VBox UI frame
      */
-    private VBox initAddCompoundComponentUI() {
+    private static VBox initAddCompoundComponentUI() {
         VBox addCompoundComponentUI = new VBox();
 
         TextArea nameField = createTextArea("Enter Compound Component Name, e.g. XOR");
 
         Label colorLabel = new Label("Select Compound Component Color");
         ColorPicker colorPicker = new ColorPicker();
+        colorPicker.setValue(CompoundComponent.DEFAULT_COLOR);
 
         TextArea widthField = createTextArea("Enter Compound Component Width (in cells)");
         TextArea heightField = createTextArea("Enter Compound Component Height (in cells)");
@@ -206,7 +197,7 @@ public class Simulation extends Application {
      * Creates a VBox which holds UI elements to add new basic Components to the current Screen
      * @return The VBox described above
      */
-    private VBox initAddComponentUI() {
+    private static VBox initAddComponentUI() {
         // TODO clean up this to try and get class variables to avoid the switches and duplicate literal strings
         Button addButton = new Button("Add new ____");
         ChoiceBox<String> componentSelector = new ChoiceBox<>();
@@ -237,22 +228,58 @@ public class Simulation extends Application {
     }
 
     /**
+     * Changes the view displayed on the window, saving the previous view in the view history
+     */
+    public static void setCenterPane(Pane paneToView) {
+        try {
+            paneViewStack.push(currentPane);
+            currentPane = paneToView;
+            window.setCenter(paneToView);
+        } catch (IllegalStateException ise) {
+            System.out.println("You're digging too deep! You've hit the max view level");
+        }
+    }
+
+    /**
+     * Returns to the view visited most recently in the view history
+     */
+    private static void previousCenterPane() {
+        if (!paneViewStack.isEmpty()) {
+            currentPane = paneViewStack.pop();
+            window.setCenter(currentPane);
+        } else {
+            System.out.println("You're back to the top level!");
+        }
+    }
+
+    /**
+     * Creates a Button which, when pressed, returns the view visited before the current one
+     * @return The Button described above
+     */
+    private static Button initPaneViewBackButton() {
+        Button backButton = new Button("<");
+        backButton.setOnAction(e -> {
+            previousCenterPane();
+        });
+        return backButton;
+    }
+
+    /**
      * Sets up everything related to the UI
      * @return The initialized UI frame
      */
-    private VBox initAddUI() {
+    private static VBox initUI() {
         VBox frame = new VBox();
         frame.setAlignment(Pos.CENTER);
         frame.setPrefWidth(PREF_UI_WIDTH);
         frame.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
 
-        VBox addComponentUI = initAddComponentUI();
-        VBox addCompoundComponentUI = initAddCompoundComponentUI();
-
         frame.getChildren().addAll(
-                addComponentUI,
+                initPaneViewBackButton(),
                 new Separator(Orientation.HORIZONTAL),
-                addCompoundComponentUI);
+                initAddComponentUI(),
+                new Separator(Orientation.HORIZONTAL),
+                initAddCompoundComponentUI());
 
         return frame;
     }
@@ -269,9 +296,8 @@ public class Simulation extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         initDisplay();
-        VBox addUI = initAddUI();
+        VBox addUI = initUI();
 
-        BorderPane window = new BorderPane();
         window.setCenter(MAIN_PANE);
         window.setLeft(addUI);
 

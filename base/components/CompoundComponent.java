@@ -1,29 +1,34 @@
 package base.components;
 
+import base.Simulation;
+import base.events.*;
 import base.fundamentals.Component;
 import base.fundamentals.SelectionArea;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-import java.util.TreeSet;
+import java.util.*;
 
 public class CompoundComponent extends Component {
-    /** The default width of a CompoundComponent */
-    private final static double DEFAULT_WIDTH = 1.5;
-    /** The default height of a CompoundComponent */
-    private final static double DEFAULT_HEIGHT= 2;
+    /** The default width of a CompoundComponent in pixels*/
+    private final static double DEFAULT_WIDTH = 90;
+    /** The default height of a CompoundComponent in pixels*/
+    private final static double DEFAULT_HEIGHT= 120;
     /** The default color of a CompoundComponent */
-    private final static Color DEFAULT_COLOR = Color.BLUE;
+    public final static Color DEFAULT_COLOR = Color.BLUE;
     /** The default String displayed on this CompoundComponent */
     private final static String DEFAULT_TEXT = "CompoundComponent";
     /** The default Color of the Text displayed on this CompoundComponent */
     private final static Color DEFAULT_TEXT_COLOR = Color.WHITE;
 
-    /** Sorted set of the Components which make up this CompoundComponent */
-    private final TreeSet<Component> contents;
-
     /** Unique Pane on which the contents of this CompoundComponent are displayed */
     private final Pane internalDisplayPane;
+
+    /** Threshold beyond which successive clicks are no longer considered a double click (in milliseconds) */
+    private final static int DOUBLE_CLICK_DELAY = 500;
+    /** Time value when the last time this Compound Component was left-clicked */
+    private long lastClickTime;
 
     /**
      * Create a new CompoundComponent
@@ -44,12 +49,31 @@ public class CompoundComponent extends Component {
 
         // Create 'internal world' of Components
         this.internalDisplayPane = new Pane();
-        this.contents = new TreeSet<>();
-        for (Component component : selection.getSelected()) {
-            contents.add(component.copy(displayPane));
-        }
 
-        getRect().setOnMouseClicked(e -> System.out.println(contents));
+        internalDisplayPane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
+                internalDisplayPane.getChildren().removeAll(Arrays.asList(e.getChildrenToRemove()))
+        );
+        internalDisplayPane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
+                internalDisplayPane.getChildren().addAll(Arrays.asList(e.getChildrenToAdd()))
+        );
+
+        // Add Components to internal display
+        selection.getSelected().forEach(c -> c.copy(internalDisplayPane));
+
+        // Double-click detection to change view to internal display
+        this.lastClickTime = 0;
+        getRect().setOnMousePressed(e -> {
+            if (e.getButton().equals(MouseButton.PRIMARY)) {
+                long thisClickTime = System.currentTimeMillis();
+                if (thisClickTime - lastClickTime < DOUBLE_CLICK_DELAY) {
+                    // Set simulation display Pane to this pane
+                    Simulation.setCenterPane(internalDisplayPane);
+                    lastClickTime = 0;
+                } else {
+                    lastClickTime = thisClickTime;
+                }
+            }
+        });
     }
 
     /**
@@ -69,14 +93,6 @@ public class CompoundComponent extends Component {
         name = name.isBlank() ? DEFAULT_TEXT : name;
 
         new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane);
-    }
-
-    /**
-     * Getter for this CompoundComponent's internal display Pane
-     * @return This CompoundComponent's internal display Pane
-     */
-    public Pane getInternalDisplayPane() {
-        return internalDisplayPane;
     }
 
     @Override

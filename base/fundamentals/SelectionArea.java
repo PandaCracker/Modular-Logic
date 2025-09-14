@@ -30,20 +30,18 @@ public class SelectionArea {
     private final TreeSet<Component> selected;
 
     /**
-     * Creates a new SelectionArea with an anchored corner
-     * @param anchorX The x coordinate of the anchor
-     * @param anchorY The y coordinate of the anchor
+     * Creates a new SelectionArea
      */
-    public SelectionArea(double anchorX, double anchorY) {
+    public SelectionArea() {
         this.rect = new Rectangle(0, 0, selectionColor);
         rect.setId("selection");
 
-        rect.setX(anchorX);
-        rect.setY(anchorY);
+        rect.setX(0);
+        rect.setY(0);
 
         this.anchor = new double[2];
-        anchor[0] = anchorX;
-        anchor[1] = anchorY;
+        anchor[0] = 0;
+        anchor[1] = 0;
 
         this.selected = new TreeSet<>();
     }

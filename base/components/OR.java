@@ -12,10 +12,10 @@ import javafx.scene.paint.Color;
  */
 public class OR extends Component {
 
-    /** The width of an OR Component */
-    private final static double WIDTH = 1.5;
-    /** The height of an OR Component */
-    private final static double HEIGHT = 2;
+    /** The width of an OR Component in pixels */
+    private final static double WIDTH = 90;
+    /** The height of an OR Component in pixels */
+    private final static double HEIGHT = 120;
     /** The color of every OR Component */
     private final static Color COLOR = Color.BLUE;
     /** The String displayed on every OR Component */
@@ -25,8 +25,8 @@ public class OR extends Component {
 
     /**
      * Create a new OR Component
-     * @param x The x coordinate (in cells) of the new OR
-     * @param y The y coordinate (in cells) of the new OR
+     * @param x The x coordinate (in pixels) of the new OR
+     * @param y The y coordinate (in pixels) of the new OR
      * @param displayPane The Pane to display the OR on
      */
     public OR(double x, double y, Pane displayPane) {
@@ -37,7 +37,7 @@ public class OR extends Component {
      * Create a new OR at the top right of the main screen
      */
     public OR() {
-        this(1,1, Simulation.MAIN_PANE);
+        this(60,60, Simulation.MAIN_PANE);
     }
 
     @Override

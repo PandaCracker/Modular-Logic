@@ -1,6 +1,5 @@
 package base.fundamentals;
 
-import base.Simulation;
 import base.events.*;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -27,9 +26,9 @@ public abstract class Component implements Comparable<Component>{
     private static int ID_COUNTER = 0;
 
     /** How many pixels wide the rounded portion on the corner of Components is */
-    private final static double ROUND_CORNER_WIDTH = Simulation.CELL_SIZE * 0.2;
+    private final static double ROUND_CORNER_WIDTH = 12;
     /** How many pixels tall the rounded portion on the corner of Components is */
-    private final static double ROUND_CORNER_HEIGHT = Simulation.CELL_SIZE * 0.2;
+    private final static double ROUND_CORNER_HEIGHT = 12;
 
     /** Default Component border Color */
     private final static Color BORDER_COLOR = Color.BLACK;
@@ -43,8 +42,6 @@ public abstract class Component implements Comparable<Component>{
     /** Distance between the center of the Text's LayoutBounds and its origin for the current Text*/
     private double halfTextWidth;
 
-    /** Pane which this Component will be displayed on */
-    private Pane displayPane;
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
 
@@ -75,10 +72,10 @@ public abstract class Component implements Comparable<Component>{
 
     /**
      * Set up the basic fields of a new object extending from Component
-     * @param x The x position (in cells) of where the Component's top left corner will be
-     * @param y The y position (in cells) of where the Component's top left corner will be
-     * @param width The width (in cells) of the Component
-     * @param height The height (in cells) of the Component
+     * @param x The x position (in pixels) of where the Component's top left corner will be
+     * @param y The y position (in pixels) of where the Component's top left corner will be
+     * @param width The width (in pixels) of the Component
+     * @param height The height (in pixels) of the Component
      * @param color The Color of the Component
      * @param numInputs The number of input Ports the Component will have
      * @param numOutputs The number of output Ports the Component will have
@@ -89,9 +86,9 @@ public abstract class Component implements Comparable<Component>{
     public Component(double x, double y, double width, double height, Paint color, int numInputs, int numOutputs,
                      String defaultText, Color defaultTextColor, Pane displayPane) {
         // Set up basic Rectangle fields
-        this.rect = new Rectangle(width * Simulation.CELL_SIZE, height * Simulation.CELL_SIZE);
-        rect.setX(x * Simulation.CELL_SIZE);
-        rect.setY(y * Simulation.CELL_SIZE);
+        this.rect = new Rectangle(width, height);
+        rect.setX(x);
+        rect.setY(y);
 
         // Rectangle corners
         rect.setArcWidth(ROUND_CORNER_WIDTH);
@@ -129,7 +126,6 @@ public abstract class Component implements Comparable<Component>{
         this.canEcho = true;
 
         // Add this to the screen
-        this.displayPane = displayPane;
         Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
@@ -350,11 +346,11 @@ public abstract class Component implements Comparable<Component>{
         Rectangle rect = getRect();
         try {
             return getClass()
-                    .getDeclaredConstructor(Double.class, Double.class, Pane.class)
+                    .getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
                     .newInstance(rect.getX(), rect.getY(), displayPane);
         } catch (NoSuchMethodException | InstantiationException |
                  IllegalAccessException | InvocationTargetException e) {
-            System.out.println("Exception during copying process: " + e.getLocalizedMessage());
+            System.out.println("Exception during copying process: " + e.getClass() + e.getLocalizedMessage());
             return null;
         }
     }
