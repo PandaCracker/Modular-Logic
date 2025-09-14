@@ -1,6 +1,5 @@
 package base.components;
 
-import base.Simulation;
 import base.fundamentals.Component;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
