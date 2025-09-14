@@ -10,6 +10,11 @@ import javafx.scene.paint.Color;
 
 import java.util.*;
 
+/**
+ * A Component which is made up of multiple other Components,
+ * encapsulating the functionality of all contained Components
+ * @author Lucas Peterson
+ */
 public class CompoundComponent extends Component {
     /** The default width of a CompoundComponent in pixels*/
     private final static double DEFAULT_WIDTH = 90;
@@ -49,6 +54,7 @@ public class CompoundComponent extends Component {
 
         // Create 'internal world' of Components
         this.internalDisplayPane = new Pane();
+        internalDisplayPane.setUserData(name);
 
         internalDisplayPane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
                 internalDisplayPane.getChildren().removeAll(Arrays.asList(e.getChildrenToRemove()))

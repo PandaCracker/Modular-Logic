@@ -50,7 +50,7 @@ public class SignalSource extends Component {
      * Create a new SignalSource at the top right of the main screen
      */
     public SignalSource() {
-        this(60,60, Simulation.MAIN_PANE);
+        this(60,60, null);
     }
 
     /**

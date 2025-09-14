@@ -33,7 +33,7 @@ public class Splitter extends Component {
      * Create a new Splitter at the top right of the main screen
      */
     public Splitter() {
-        this(60, 60, Simulation.MAIN_PANE);
+        this(60, 60, null);
     }
 
     @Override

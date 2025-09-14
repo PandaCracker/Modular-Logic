@@ -37,7 +37,7 @@ public class AND extends Component {
      * Create a new AND at the top right corner of the main screen
      */
     public AND() {
-        this(60, 60, Simulation.MAIN_PANE);
+        this(60, 60, null);
     }
 
     @Override

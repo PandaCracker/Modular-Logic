@@ -35,7 +35,7 @@ public class NOT extends Component {
      * Create a new NOT Component at the top right corner of the main screen
      */
     public NOT() {
-        this(60, 60, Simulation.MAIN_PANE);
+        this(60, 60, null);
     }
 
     @Override

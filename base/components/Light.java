@@ -44,7 +44,7 @@ public class Light extends Component {
      * Create a new Light at the top-right corner of the main screen
      */
     public Light() {
-        this(60, 60, Simulation.MAIN_PANE);
+        this(60, 60, null);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class OR extends Component {
      * Create a new OR at the top right of the main screen
      */
     public OR() {
-        this(60,60, Simulation.MAIN_PANE);
+        this(60,60, null);
     }
 
     @Override

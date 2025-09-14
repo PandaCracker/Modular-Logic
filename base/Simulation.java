@@ -38,11 +38,10 @@ public class Simulation extends Application {
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
 
-    // TODO see if I can make this private and handle adding through defaults & getter used by Component
     /** Main top-level display Pane */
-    public final static Pane MAIN_PANE = new Pane();
+    private final static Pane mainPane = new Pane();
     /** Current display Pane being viewed */
-    private static Pane currentPane = MAIN_PANE;
+    private static Pane currentPane = mainPane;
     /** Top-level layout object all UI and display objects */
     private final static BorderPane window = new BorderPane();
 
@@ -56,13 +55,21 @@ public class Simulation extends Application {
 
 
     /**
+     * Get the main-level display pane used by the Simulation Class
+     * @return The top level Pane object
+     */
+    public static Pane getMainPane() {
+        return mainPane;
+    }
+
+    /**
      * Get the Object clicked on by a MouseEvent, if any.
      * @param me The MouseEvent in question. Assumed to be targeted at the displayPane
      * @return The Object, if any, on the display pane which was clicked on
      */
     private static Object getClickedOn(MouseEvent me) {
-        List<Node> children = MAIN_PANE.getChildren();
-        if (MAIN_PANE.contains(me.getX(), me.getY())) {
+        List<Node> children = mainPane.getChildren();
+        if (mainPane.contains(me.getX(), me.getY())) {
             for (Node node : children) {
                 if (node.getLayoutBounds().contains(me.getX(), me.getY())) {
                     return node.getUserData();
@@ -88,20 +95,22 @@ public class Simulation extends Application {
      * Initializes everything related to the main display window
      */
     private static void initDisplay() {
-        List<Node> children = MAIN_PANE.getChildren();
+        // Name of the view
+        mainPane.setUserData("Main View");
+        List<Node> children = mainPane.getChildren();
 
-        MAIN_PANE.setPrefWidth(INIT_BOARD_WIDTH);
-        MAIN_PANE.setPrefHeight(INIT_BOARD_HEIGHT);
+        mainPane.setPrefWidth(INIT_BOARD_WIDTH);
+        mainPane.setPrefHeight(INIT_BOARD_HEIGHT);
 
         // Multi-selection handling
-        MAIN_PANE.setOnDragDetected(e -> {
+        mainPane.setOnDragDetected(e -> {
             // Know a multi-select is happening
             if (selecting) {
                 children.add(selection.getRect());
             }
         });
 
-        MAIN_PANE.setOnMousePressed(e -> {
+        mainPane.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
             if (getClickedOn(e) == null && e.getButton() == MouseButton.PRIMARY) {
                 selecting = true;
@@ -109,7 +118,7 @@ public class Simulation extends Application {
             }
         });
 
-        MAIN_PANE.setOnMouseDragged(e -> {
+        mainPane.setOnMouseDragged(e -> {
             // Expand Selection Area
             if (selecting) {
                 List<Component> components = componentsFromChildren(children);
@@ -117,7 +126,7 @@ public class Simulation extends Application {
             }
         });
 
-        MAIN_PANE.setOnMouseReleased(e -> {
+        mainPane.setOnMouseReleased(e -> {
             // Done selecting more elements, remove selection rect
             if (selecting) {
                 children.remove(selection.getRect());
@@ -127,16 +136,16 @@ public class Simulation extends Application {
         });
 
         // Set up Component addition/removal processes
-        MAIN_PANE.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
+        mainPane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
                 children.removeAll(Arrays.asList(e.getChildrenToRemove()))
         );
-        MAIN_PANE.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
+        mainPane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
                 children.addAll(Arrays.asList(e.getChildrenToAdd()))
         );
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> componentsFromChildren(MAIN_PANE.getChildren()).forEach(Component::update)
+                e -> componentsFromChildren(mainPane.getChildren()).forEach(Component::update)
         ));
 
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -182,7 +191,7 @@ public class Simulation extends Application {
                     heightField.getText(),
                     colorPicker.getValue(),
                     nameField.getText(),
-                    MAIN_PANE);
+                    mainPane);
             selection.getSelected().forEach(Component::remove);
         });
 
@@ -232,9 +241,10 @@ public class Simulation extends Application {
      */
     public static void setCenterPane(Pane paneToView) {
         try {
+            // Save previous view
             paneViewStack.push(currentPane);
             currentPane = paneToView;
-            window.setCenter(paneToView);
+            updateCurrentPane();
         } catch (IllegalStateException ise) {
             System.out.println("You're digging too deep! You've hit the max view level");
         }
@@ -246,22 +256,35 @@ public class Simulation extends Application {
     private static void previousCenterPane() {
         if (!paneViewStack.isEmpty()) {
             currentPane = paneViewStack.pop();
-            window.setCenter(currentPane);
+            updateCurrentPane();
         } else {
             System.out.println("You're back to the top level!");
         }
     }
 
     /**
-     * Creates a Button which, when pressed, returns the view visited before the current one
-     * @return The Button described above
+     * Updates the UI to reflect the value of currentPane
      */
-    private static Button initPaneViewBackButton() {
+    private static void updateCurrentPane() {
+        window.setCenter(currentPane);
+        Label viewLabel = (Label) window.lookup("#viewLabel");
+        viewLabel.setText("Current View: " + currentPane.getUserData());
+    }
+
+    /**
+     * Creates a UI to control the current view Pane
+     * @return An HBox containing the UI described above
+     */
+    private static HBox initPaneViewUI() {
         Button backButton = new Button("<");
-        backButton.setOnAction(e -> {
-            previousCenterPane();
-        });
-        return backButton;
+        Label viewLabel = new Label("Current View: Main View");
+        viewLabel.setId("viewLabel");
+
+        backButton.setOnAction(e -> previousCenterPane());
+        HBox paneViewUI = new HBox(backButton, viewLabel);
+        paneViewUI.setAlignment(Pos.CENTER);
+
+        return paneViewUI;
     }
 
     /**
@@ -275,7 +298,7 @@ public class Simulation extends Application {
         frame.setBackground(new Background(new BackgroundFill(Color.GRAY, null, null)));
 
         frame.getChildren().addAll(
-                initPaneViewBackButton(),
+                initPaneViewUI(),
                 new Separator(Orientation.HORIZONTAL),
                 initAddComponentUI(),
                 new Separator(Orientation.HORIZONTAL),
@@ -298,7 +321,7 @@ public class Simulation extends Application {
         initDisplay();
         VBox addUI = initUI();
 
-        window.setCenter(MAIN_PANE);
+        window.setCenter(mainPane);
         window.setLeft(addUI);
 
         Scene scene = new Scene(window);

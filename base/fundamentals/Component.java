@@ -1,5 +1,6 @@
 package base.fundamentals;
 
+import base.Simulation;
 import base.events.*;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
@@ -126,7 +127,9 @@ public abstract class Component implements Comparable<Component>{
         this.canEcho = true;
 
         // Add this to the screen
-        Event.fireEvent(displayPane, new AddChildrenEvent(rect, text));
+        Event.fireEvent(
+                displayPane == null ? Simulation.getMainPane() : displayPane,
+                new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
         this.numInputs = numInputs;
