@@ -21,7 +21,8 @@ import javafx.util.Duration;
 import java.util.*;
 
 /// Things to do:
-/// Check connections on new compound components
+/// Add input/output ports on interiors of Compounds
+/// Initialize Compound interiors w/ same selection abilities
 /// Consolidate the two methods of getting IO counts for Compounds, removing SelectionArea method
 /// Compound update method
 /// Make copy constructor for compound components for multi-level compounds
@@ -152,8 +153,12 @@ public class Simulation extends Application {
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-                e -> componentsFromChildren(mainPane.getChildren()).forEach(Component::update)
-        ));
+            e ->
+                componentsFromChildren(mainPane.getChildren()).forEach(c -> {
+                    c.update();
+                    //Arrays.stream(c.getAllPorts()).forEach(Port::debugTick);
+                })
+            ));
 
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();

@@ -427,7 +427,8 @@ public abstract class Component implements Comparable<Component>{
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Component) {
-            return rect.equals(((Component) obj).getRect());
+            Rectangle otherRect = ((Component) obj).getRect();
+            return rect.getX() == otherRect.getX() && rect.getY() == otherRect.getY();
         }
         return false;
     }

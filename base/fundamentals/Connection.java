@@ -109,7 +109,7 @@ public class Connection {
             }
         });
 
-        Event.fireEvent(anchorPort.getCircle().getParent(), new AddChildrenEvent(line));
+        Event.fireEvent((complete ? sourcePort : anchorPort).getCircle().getParent(), new AddChildrenEvent(line));
     }
 
     /**

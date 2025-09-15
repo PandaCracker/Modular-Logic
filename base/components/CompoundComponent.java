@@ -65,13 +65,17 @@ public class CompoundComponent extends Component {
         );
 
         // Add Components to internal display
-        selection.getSelected().forEach(c -> c.copy(internalDisplayPane));
+        TreeSet<Component> selected = selection.getSelected();
+        selected.forEach(c -> c.copy(internalDisplayPane));
+        connectComponents(selected);
 
         // Double-click detection to change view to internal display
         this.lastClickTime = 0;
         getRect().setOnMousePressed(e -> {
             if (e.getButton().equals(MouseButton.PRIMARY)) {
                 processPrimaryClick();
+            } else if (e.getButton().equals(MouseButton.SECONDARY)) {
+                super.remove();
             }
         });
     }
@@ -144,7 +148,7 @@ public class CompoundComponent extends Component {
                     Port originalPort = originalPorts[portNum];
                     Component connectedToOriginal = originalPort.getConnectedComponent();
                     // If the port is connected to a Component which is also in the original set
-                    if (originals.contains(connectedToOriginal)) {
+                    if (connectedToOriginal != null && originals.contains(connectedToOriginal)) {
                         // Connect those components
                         copyPorts[portNum].connectTo(findIn(copies, connectedToOriginal),
                                 originalPort.getConnectedPortNum());
@@ -166,7 +170,6 @@ public class CompoundComponent extends Component {
 
     @Override
     public String toString() {
-        return "Compound " + super.toString() + " with " + getNumInputs() + " ins, "
-                + getNumOutputs() + " outs";
+        return super.toString() + " with " + getNumInputs() + " ins, " + getNumOutputs() + " outs";
     }
 }

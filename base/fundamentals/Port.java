@@ -1,6 +1,5 @@
 package base.fundamentals;
 
-import base.Simulation;
 import base.events.AddChildrenEvent;
 import base.events.DeleteChildrenEvent;
 import javafx.event.Event;
@@ -162,10 +161,7 @@ public class Port {
      * @return The Component where this Port's Connection's other end is, or null if this Port is not connected
      */
     public Component getConnectedComponent() {
-        if (isConnected()) {
-            return getConnectedPort().getParent();
-        }
-        return null;
+        return isConnected() ? getConnectedPort().getParent() : null;
     }
 
     /**
@@ -174,11 +170,7 @@ public class Port {
      */
     public Port getConnectedPort() {
         if (isConnected()){
-            if (isInput()) {
-                return connection.getSourcePort();
-            } else {
-                return connection.getDestPort();
-            }
+            return isInput() ? connection.getSourcePort() : connection.getDestPort();
         }
         return null;
     }
@@ -189,7 +181,7 @@ public class Port {
      * @return The connected Port's port number on the connected Component, or -1 if no Component is connected.
      */
     public int getConnectedPortNum() {
-        return isConnected() ? -1 : getConnectedPort().getPortNum();
+        return isConnected() ? getConnectedPort().getPortNum() : -1;
     }
 
     /**
@@ -197,7 +189,7 @@ public class Port {
      * @return Whether this Port is connected to another Port
      */
     public boolean isConnected() {
-        return connection != null;
+        return connection != null && connection.isComplete();
     }
 
     /**
@@ -249,17 +241,19 @@ public class Port {
     }
 
     /**
-     * Connect this Port to another Component
+     * Connect this Port to another Component if not already connected
      * @param other The Component to connect to
      * @param portNum The Port to connect to on the other Component
      */
     public void connectTo(Component other, int portNum) {
-        if (isInput()) {
-            connection = new Connection(other.getOutputPort(portNum), this);
-            connection.getSourcePort().setConnection(connection);
-        } else {
-            connection = new Connection(this, other.getInputPort(portNum));
-            connection.getDestPort().setConnection(connection);
+        if (!isConnected()) {
+            if (isInput()) {
+                connection = new Connection(other.getOutputPort(portNum), this);
+                connection.getSourcePort().setConnection(connection);
+            } else {
+                connection = new Connection(this, other.getInputPort(portNum));
+                connection.getDestPort().setConnection(connection);
+            }
         }
     }
 
@@ -313,5 +307,9 @@ public class Port {
     @Override
     public int hashCode() {
         return Objects.hash(getParent(), type);
+    }
+
+    public void debugTick() {
+        circle.setFill(!isConnected() ? Color.RED : Color.GREEN);
     }
 }
