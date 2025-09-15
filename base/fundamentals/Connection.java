@@ -1,14 +1,11 @@
 package base.fundamentals;
 
-import base.events.AddChildrenEvent;
-import base.events.DeleteChildrenEvent;
+import base.events.*;
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.*;
 
 /**
  * A basic representation of an object on the board which carries

@@ -1,7 +1,6 @@
 package base.fundamentals;
 
-import base.events.AddChildrenEvent;
-import base.events.DeleteChildrenEvent;
+import base.events.*;
 import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
@@ -307,9 +306,5 @@ public class Port {
     @Override
     public int hashCode() {
         return Objects.hash(getParent(), type);
-    }
-
-    public void debugTick() {
-        circle.setFill(!isConnected() ? Color.RED : Color.GREEN);
     }
 }

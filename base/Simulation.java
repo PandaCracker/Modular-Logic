@@ -11,13 +11,15 @@ import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /// Things to do:
@@ -42,6 +44,11 @@ public class Simulation extends Application {
     public final static int PREF_UI_WIDTH = 225;
     /** Max pixels tall the TextAreas should be */
     public final static int MAX_TEXT_AREA_HEIGHT = 40;
+
+    /** X position at which all new Components appear, in pixels */
+    public final static double NEW_COMPONENT_X = 60;
+    /** Y position at which all new Components appear, in pixels */
+    public final static double NEW_COMPONENT_Y = 60;
 
     /** Number of milliseconds between each logical update frame */
     public final static int FRAME_DELAY_MS = 33;
@@ -76,8 +83,8 @@ public class Simulation extends Application {
      * @return The Object, if any, on the display pane which was clicked on
      */
     private static Object getClickedOn(MouseEvent me) {
-        List<Node> children = mainPane.getChildren();
-        if (mainPane.contains(me.getX(), me.getY())) {
+        List<Node> children = currentPane.getChildren();
+        if (currentPane.contains(me.getX(), me.getY())) {
             for (Node node : children) {
                 if (node.getLayoutBounds().contains(me.getX(), me.getY())) {
                     return node.getUserData();
@@ -87,38 +94,22 @@ public class Simulation extends Application {
         return null;
     }
 
-    /**
-     * Get a list of every Component from a list of Nodes
-     * @param children A list possibly containing Components
-     * @return A list of all (if any) Components in the list provided
-     */
-    public static List<Component> componentsFromChildren(List<Node> children) {
-        return children.stream()
-                .filter(n -> n.getUserData() instanceof Component)
-                .map(n -> (Component) n.getUserData())
-                .toList();
-    }
+    public static void configurePane(Pane pane, String name) {
+        pane.setUserData(name);
+        List<Node> children = pane.getChildren();
 
-    /**
-     * Initializes everything related to the main display window
-     */
-    private static void initDisplay() {
-        // Name of the view
-        mainPane.setUserData("Main View");
-        List<Node> children = mainPane.getChildren();
-
-        mainPane.setPrefWidth(INIT_BOARD_WIDTH);
-        mainPane.setPrefHeight(INIT_BOARD_HEIGHT);
+        pane.setPrefWidth(Simulation.INIT_BOARD_WIDTH);
+        pane.setPrefHeight(Simulation.INIT_BOARD_HEIGHT);
 
         // Multi-selection handling
-        mainPane.setOnDragDetected(e -> {
+        pane.setOnDragDetected(e -> {
             // Know a multi-select is happening
             if (selecting) {
                 children.add(selection.getRect());
             }
         });
 
-        mainPane.setOnMousePressed(e -> {
+        pane.setOnMousePressed(e -> {
             // Possible multi-select start, more accurate than waiting for drag detection
             if (getClickedOn(e) == null && e.getButton() == MouseButton.PRIMARY) {
                 selecting = true;
@@ -126,15 +117,15 @@ public class Simulation extends Application {
             }
         });
 
-        mainPane.setOnMouseDragged(e -> {
+        pane.setOnMouseDragged(e -> {
             // Expand Selection Area
             if (selecting) {
-                List<Component> components = componentsFromChildren(children);
+                List<Component> components = Utils.componentsFromChildren(children);
                 selection.expandSelection(e.getX(), e.getY(), components);
             }
         });
 
-        mainPane.setOnMouseReleased(e -> {
+        pane.setOnMouseReleased(e -> {
             // Done selecting more elements, remove selection rect
             if (selecting) {
                 children.remove(selection.getRect());
@@ -144,20 +135,23 @@ public class Simulation extends Application {
         });
 
         // Set up Component addition/removal processes
-        mainPane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
+        pane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
                 children.removeAll(Arrays.asList(e.getChildrenToRemove()))
         );
-        mainPane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
+        pane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
                 children.addAll(Arrays.asList(e.getChildrenToAdd()))
         );
+    }
+
+    /**
+     * Initializes everything related to the main display window
+     */
+    private static void initMainDisplay() {
+        configurePane(mainPane, "Main View");
 
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
-            e ->
-                componentsFromChildren(mainPane.getChildren()).forEach(c -> {
-                    c.update();
-                    //Arrays.stream(c.getAllPorts()).forEach(Port::debugTick);
-                })
+            e -> Utils.componentsFromChildren(mainPane.getChildren()).forEach(Component::update)
             ));
 
         timeline.setCycleCount(Animation.INDEFINITE);
@@ -203,7 +197,7 @@ public class Simulation extends Application {
                     heightField.getText(),
                     colorPicker.getValue(),
                     nameField.getText(),
-                    mainPane);
+                    currentPane);
             selection.getSelected().forEach(Component::remove);
         });
 
@@ -219,27 +213,38 @@ public class Simulation extends Application {
      * @return The VBox described above
      */
     private static VBox initAddComponentUI() {
-        // TODO clean up this to try and get class variables to avoid the switches and duplicate literal strings
+        // TODO maybe a bit overcomplicated
         Button addButton = new Button("Add new ____");
         ChoiceBox<String> componentSelector = new ChoiceBox<>();
+        Class<? extends Component>[] componentClasses = new Class[]
+                {AND.class, OR.class, NOT.class, Light.class, Splitter.class, SignalSource.class};
+
+        StringConverter<Class<? extends Component>> classConverter = new StringConverter<>() {
+            @Override
+            public String toString(Class<? extends Component> object) {
+                return object.getSimpleName();
+            }
+            @Override
+            public Class<? extends Component> fromString(String string) {
+                return Arrays.stream(componentClasses).filter(c -> c.getSimpleName().equals(string))
+                        .findFirst().orElse(null);
+            }
+        };
 
         addButton.setOnAction(ae -> {
-            String addText = componentSelector.getValue();
-            switch((addText == null ? "" : addText)) {
-                case "AND" : new AND(); break;
-                case "OR" : new OR(); break;
-                case "NOT" : new NOT(); break;
-                case "Light" : new Light(); break;
-                case "Signal Source" : new SignalSource(); break;
-                case "Splitter" : new Splitter(); break;
-                default: break;
+            Class<? extends Component> componentToMake = classConverter.fromString(componentSelector.getValue());
+            try {
+                componentToMake.getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
+                        .newInstance(NEW_COMPONENT_X, NEW_COMPONENT_Y, currentPane);
+            } catch (Exception e) {
+                System.out.println("Basic Component Creation " + e.getClass() + ": " + e.getLocalizedMessage());
             }
         });
 
-        componentSelector.getItems().addAll(List.of("AND", "OR", "NOT", "Light", "Signal Source", "Splitter"));
+        componentSelector.getItems().addAll(Arrays.stream(componentClasses).map(classConverter::toString).toList());
         componentSelector.setOnAction(e -> {
             String addText = componentSelector.getValue();
-            addButton.setText("Add new " + (addText == null ? "___" : addText));
+            addButton.setText("Add new " + (addText == null ? "____" : addText));
         });
 
         VBox addComponentUI = new VBox(addButton, componentSelector);
@@ -330,7 +335,7 @@ public class Simulation extends Application {
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
-        initDisplay();
+        initMainDisplay();
         VBox addUI = initUI();
 
         window.setCenter(mainPane);

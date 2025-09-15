@@ -1,10 +1,8 @@
 package base.components;
 
 import base.Simulation;
-import base.events.*;
-import base.fundamentals.Component;
-import base.fundamentals.Port;
-import base.fundamentals.SelectionArea;
+import base.Utils;
+import base.fundamentals.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -52,22 +50,33 @@ public class CompoundComponent extends Component {
     private CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
                               Color color, int numInputs, int numOutputs, String name, Pane displayPane) {
         super(x, y, width, height, color, numInputs, numOutputs, name, DEFAULT_TEXT_COLOR, displayPane);
-
-        // Create 'internal world' of Components
         this.internalDisplayPane = new Pane();
-        internalDisplayPane.setUserData(name);
+        init(selection.getSelected());
+    }
 
-        internalDisplayPane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
-                internalDisplayPane.getChildren().removeAll(Arrays.asList(e.getChildrenToRemove()))
-        );
-        internalDisplayPane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
-                internalDisplayPane.getChildren().addAll(Arrays.asList(e.getChildrenToAdd()))
-        );
+    /**
+     * Create a new deep copy from a Compound Component
+     * @param other The Compound Component to copy
+     */
+    public CompoundComponent(CompoundComponent other) {
+        super(other.getRect().getX(), other.getRect().getY(), other.getRect().getWidth(), other.getRect().getHeight(),
+                other.getRect().getFill(), other.getNumInputs(), other.getNumOutputs(), other.getText().getText(),
+                DEFAULT_TEXT_COLOR, (Pane) other.getRect().getParent());
+        this.internalDisplayPane = new Pane();
+        init(Utils.componentsFromChildren(other.internalDisplayPane.getChildren()));
+    }
+
+    /**
+     * Copy and connect the internals of a new Compound Components from the collection of Components which make it up
+     * @param internals A Collection of Components which make up the internals of this Compound Component
+     */
+    private void init(Collection<Component> internals) {
+        // Create 'internal world' of Components
+        Simulation.configurePane(internalDisplayPane, getText().getText());
 
         // Add Components to internal display
-        TreeSet<Component> selected = selection.getSelected();
-        selected.forEach(c -> c.copy(internalDisplayPane));
-        connectComponents(selected);
+        internals.forEach(c -> c.copy(internalDisplayPane));
+        connectComponents(internals);
 
         // Double-click detection to change view to internal display
         this.lastClickTime = 0;
@@ -131,9 +140,9 @@ public class CompoundComponent extends Component {
      *      input Ports once all original connections have been carried over, and index 1 being the same for
      *      the number destinations needed to cover unconnected output Ports.
      */
-    private int[] connectComponents(Set<Component> originals) {
+    private int[] connectComponents(Collection<Component> originals) {
         int[] IOPortsNeeded = new int[] {0,0};
-        List<Component> copies = Simulation.componentsFromChildren(internalDisplayPane.getChildren());
+        List<Component> copies = Utils.componentsFromChildren(internalDisplayPane.getChildren());
         // For every component in the current display pane
         for (Component copy : copies) {
             // If it is also in the original set (copies should have the same hash)

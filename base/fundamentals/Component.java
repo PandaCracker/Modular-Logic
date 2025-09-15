@@ -1,19 +1,18 @@
 package base.fundamentals;
 
 import base.Simulation;
+import base.components.CompoundComponent;
 import base.events.*;
 import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import javafx.scene.paint.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 /**
@@ -197,6 +196,14 @@ public abstract class Component implements Comparable<Component>{
     }
 
     /**
+     * Get the Text associated with this Component
+     * @return The Text associated with this Component
+     */
+    public Text getText() {
+        return text;
+    }
+
+    /**
      * Get the number of input Ports this Component has
      * @return The number of input Ports on this Component
      */
@@ -342,19 +349,20 @@ public abstract class Component implements Comparable<Component>{
     }
 
     /**
-     * Returns a deep copy of this Component, excluding any existing Connections
-     * @return A new Component with the same update method as the caller
+     * Creates a deep copy of this Component, adding it to the specified screen
+     * @param displayPane The Pane to add this new Component to
      */
-    public Component copy(Pane displayPane) {
+    public void copy(Pane displayPane) {
         Rectangle rect = getRect();
-        try {
-            return getClass()
-                    .getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
-                    .newInstance(rect.getX(), rect.getY(), displayPane);
-        } catch (NoSuchMethodException | InstantiationException |
-                 IllegalAccessException | InvocationTargetException e) {
-            System.out.println("Exception during copying process: " + e.getClass() + e.getLocalizedMessage());
-            return null;
+        if (getClass() == CompoundComponent.class) {
+            new CompoundComponent((CompoundComponent) this);
+        } else {
+            try {
+                getClass().getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
+                        .newInstance(rect.getX(), rect.getY(), displayPane);
+            } catch (Exception e) {
+                System.out.println("Exception during copying process: " + e.getClass() + " " + e.getLocalizedMessage());
+            }
         }
     }
 
