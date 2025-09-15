@@ -46,7 +46,7 @@ public class Connection {
     private boolean on;
 
     /**
-     * Creates a new Connection
+     * Creates a new Connection anchored to one known Port
      * @param anchorPort The Port this Connection is anchored to when being dragged around
      */
     public Connection(Port anchorPort) {
@@ -64,7 +64,34 @@ public class Connection {
         Circle anchorCirc = anchorPort.getCircle();
         double[] anchorCoords = new double[] {anchorCirc.getCenterX(), anchorCirc.getCenterY()};
         this.line = new Line(anchorCoords[0], anchorCoords[1], anchorCoords[0], anchorCoords[1]);
+        setUpLine(line);
+    }
 
+    /**
+     * Create a new Connection between two known ports
+     * @param srcPort The Port this Connection is receiving signals from
+     * @param dstPort The Port this Connection is sending signal to
+     */
+    public Connection(Port srcPort, Port dstPort) {
+        this.sourcePort = srcPort;
+        Circle srcCircle = srcPort.getCircle();
+
+        this.destPort = dstPort;
+        Circle dstCircle = dstPort.getCircle();
+
+        this.complete = true;
+        this.on = false;
+
+        this.line = new Line(srcCircle.getCenterX(), srcCircle.getCenterY(),
+                dstCircle.getCenterX(), dstCircle.getCenterY());
+        setUpLine(line);
+    }
+
+    /**
+     * Initialize the common aspects of all Connection Lines
+     * @param line The line to adjust
+     */
+    private void setUpLine(Line line) {
         line.setMouseTransparent(!complete);
         line.setUserData(this);
 

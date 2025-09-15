@@ -9,6 +9,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Shape;
 
+import java.util.Objects;
+
 /**
  * Represents one I/O point on a Component
  *
@@ -30,6 +32,8 @@ public class Port {
     private final Component parent;
     /** Which type of Port this is */
     private final PortType type;
+    /** The port number of this Port on its parent */
+    private final int portNum;
     /** The Connection, if any, this Port has */
     private Connection connection;
 
@@ -53,6 +57,7 @@ public class Port {
      */
     public Port(Component parent, PortType type, int portNum, int ID) {
         this.parent = parent;
+        this.portNum = portNum;
         this.type = type;
         this.connection = null;
 
@@ -145,18 +150,46 @@ public class Port {
     }
 
     /**
-     * Get the Component this Port is connected to. Returns Null if this Port is not connected to any other Component
-     * @return The Component where this Port's Connection's other end is
+     * Get the port number of this Port on its Parent
+     * @return The port number of this Port on its Parent
+     */
+    public int getPortNum() {
+        return portNum;
+    }
+
+    /**
+     * Get the Component this Port is connected to.
+     * @return The Component where this Port's Connection's other end is, or null if this Port is not connected
      */
     public Component getConnectedComponent() {
+        if (isConnected()) {
+            return getConnectedPort().getParent();
+        }
+        return null;
+    }
+
+    /**
+     * Get the Port on the other side of this Port's Connection, if any
+     * @return The Port on the other side of the Connection, or null if this Port is not connected
+     */
+    public Port getConnectedPort() {
         if (isConnected()){
             if (isInput()) {
-                return connection.getSourcePort().getParent();
+                return connection.getSourcePort();
             } else {
-                return connection.getDestPort().getParent();
+                return connection.getDestPort();
             }
         }
         return null;
+    }
+
+    /**
+     * Get the port number of the Port this Port is connected to on the other Component.
+     * This will return the appropriate index into the Component's inputPort or outputPort arrays/get methods
+     * @return The connected Port's port number on the connected Component, or -1 if no Component is connected.
+     */
+    public int getConnectedPortNum() {
+        return isConnected() ? -1 : getConnectedPort().getPortNum();
     }
 
     /**
@@ -203,6 +236,34 @@ public class Port {
     }
 
     /**
+     * Change the Connection of this Port.
+     * Does nothing if this Port already has a Connection, or if the Connection provided does not have this Port as
+     * either of its endpoints
+     * @param connection The Connection to add to this Port.
+     */
+    private void setConnection(Connection connection) {
+        boolean connectsToThis = connection.getDestPort().equals(this) || connection.getSourcePort().equals(this);
+        if (!isConnected() && connectsToThis) {
+            this.connection = connection;
+        }
+    }
+
+    /**
+     * Connect this Port to another Component
+     * @param other The Component to connect to
+     * @param portNum The Port to connect to on the other Component
+     */
+    public void connectTo(Component other, int portNum) {
+        if (isInput()) {
+            connection = new Connection(other.getOutputPort(portNum), this);
+            connection.getSourcePort().setConnection(connection);
+        } else {
+            connection = new Connection(this, other.getInputPort(portNum));
+            connection.getDestPort().setConnection(connection);
+        }
+    }
+
+    /**
      * Register that this Port's Connection has been removed <br>
      * Should only be called by the Connection's remove() method
      * @see Connection#remove
@@ -241,5 +302,16 @@ public class Port {
         if (isConnected()) {
             connection.updatePosition();
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Port port)) return false;
+        return Objects.equals(getParent(), port.getParent()) && type == port.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getParent(), type);
     }
 }

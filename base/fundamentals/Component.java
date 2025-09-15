@@ -359,6 +359,16 @@ public abstract class Component implements Comparable<Component>{
     }
 
     /**
+     * Connect this Component to the other Component
+     * @param other The Component to connect to
+     * @param srcPort The Port to connect from on this Component
+     * @param dstPort The Port to connect to on the other Component
+     */
+    public void connectTo(Component other, int srcPort, int dstPort) {
+        outputPorts[srcPort].connectTo(other, dstPort);
+    }
+
+    /**
      * Method which is called once per logic cycle to progress a Component's state.
      * <br>
      * Should implement each Component's unique logical functionality
@@ -387,14 +397,14 @@ public abstract class Component implements Comparable<Component>{
      */
     @Override
     public int hashCode() {
-        return rect.hashCode();
+        return (int) (rect.getX() * numInputs + rect.getY() * (17.4 + numOutputs));
     }
 
     /**
      * Defines a natural ordering of Components.
      * Components which are placed higher on the screen are defined as less than another Component.
      * A Component which is of equal y-value to another Component but lesser x-value is defined as less than.
-     * Components which have exactly the same positioning are ordered by ID, smallest to largest.
+     * Components which have exactly the same positioning are considered equal.
      * @param o the object to be compared.
      * @return A negative integer if the other Component is less than this Component, 0 if equal, and a positive
      *      integer otherwise
@@ -406,9 +416,19 @@ public abstract class Component implements Comparable<Component>{
         if (res == 0) {
             res = (int) (rect.getX() - otherRect.getX());
         }
-        if (res == 0) {
-            res = Integer.parseInt(rect.getId()) - Integer.parseInt(otherRect.getId());
-        }
         return res;
+    }
+
+    /**
+     * Two Components are equal if they have the same underlying Rectangle
+     * @param obj The object to compare
+     * @return False unless obj is a Component with an equivalent Rectangle
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Component) {
+            return rect.equals(((Component) obj).getRect());
+        }
+        return false;
     }
 }

@@ -20,6 +20,13 @@ import javafx.util.Duration;
 
 import java.util.*;
 
+/// Things to do:
+/// Check connections on new compound components
+/// Consolidate the two methods of getting IO counts for Compounds, removing SelectionArea method
+/// Compound update method
+/// Make copy constructor for compound components for multi-level compounds
+/// Persistence of compounds
+
 /**
  * Main simulation class <br>
  * Sets up the Application and holds every Component

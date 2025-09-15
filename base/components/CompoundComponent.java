@@ -3,6 +3,7 @@ package base.components;
 import base.Simulation;
 import base.events.*;
 import base.fundamentals.Component;
+import base.fundamentals.Port;
 import base.fundamentals.SelectionArea;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Pane;
@@ -70,14 +71,7 @@ public class CompoundComponent extends Component {
         this.lastClickTime = 0;
         getRect().setOnMousePressed(e -> {
             if (e.getButton().equals(MouseButton.PRIMARY)) {
-                long thisClickTime = System.currentTimeMillis();
-                if (thisClickTime - lastClickTime < DOUBLE_CLICK_DELAY) {
-                    // Set simulation display Pane to this pane
-                    Simulation.setCenterPane(internalDisplayPane);
-                    lastClickTime = 0;
-                } else {
-                    lastClickTime = thisClickTime;
-                }
+                processPrimaryClick();
             }
         });
     }
@@ -99,6 +93,70 @@ public class CompoundComponent extends Component {
         name = name.isBlank() ? DEFAULT_TEXT : name;
 
         new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane);
+    }
+
+    /**
+     * Process a left click, checking for double clicks.
+     * Tells the Simulation to view this Compound Component's internal world when a double click is detected
+     */
+    private void processPrimaryClick() {
+        long thisClickTime = System.currentTimeMillis();
+        if (thisClickTime - lastClickTime < DOUBLE_CLICK_DELAY) {
+            // Set simulation display Pane to this pane
+            Simulation.setCenterPane(internalDisplayPane);
+            lastClickTime = 0;
+        } else {
+            lastClickTime = thisClickTime;
+        }
+    }
+
+    /**
+     * Returns the first Component which is equivalent to the one provided from the Collection provided
+     * @param collection The Collection of Components to search through
+     * @param dupeToReturn The Component which will act as a key to compare against
+     * @return The first Component found which is equivalent to the key Component provided, or null if no match is found
+     */
+    private Component findIn(Collection<Component> collection, Component dupeToReturn) {
+        return collection.stream().filter(c -> c.equals(dupeToReturn)).findFirst().orElse(null);
+    }
+
+    /**
+     * Connect the Components in the internal display Pane in the same manner as those in the SelectionArea which
+     * was used to create this CompoundComponent
+     * @return An int array of length 2, with index 0 being the number of sources needed to cover all unconnected
+     *      input Ports once all original connections have been carried over, and index 1 being the same for
+     *      the number destinations needed to cover unconnected output Ports.
+     */
+    private int[] connectComponents(Set<Component> originals) {
+        int[] IOPortsNeeded = new int[] {0,0};
+        List<Component> copies = Simulation.componentsFromChildren(internalDisplayPane.getChildren());
+        // For every component in the current display pane
+        for (Component copy : copies) {
+            // If it is also in the original set (copies should have the same hash)
+            if (originals.contains(copy)) {
+                // Get that original Component
+                Component original = findIn(originals, copy);
+
+                Port[] originalPorts = original.getAllPorts();
+                Port[] copyPorts = copy.getAllPorts();
+                // For every port
+                for (int portNum = 0; portNum < originalPorts.length; portNum++) {
+                    Port originalPort = originalPorts[portNum];
+                    Component connectedToOriginal = originalPort.getConnectedComponent();
+                    // If the port is connected to a Component which is also in the original set
+                    if (originals.contains(connectedToOriginal)) {
+                        // Connect those components
+                        copyPorts[portNum].connectTo(findIn(copies, connectedToOriginal),
+                                originalPort.getConnectedPortNum());
+                    } else {
+                        // Otherwise, the Port was connected from outside or not at all. Either way, it needs somewhere
+                        // to go. Input Ports need a source, output Ports need a destination
+                        IOPortsNeeded[originalPort.isInput() ? 1 : 0]++;
+                    }
+                }
+            }
+        }
+        return IOPortsNeeded;
     }
 
     @Override
