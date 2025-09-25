@@ -14,9 +14,6 @@ import javafx.scene.shape.*;
  * @author Lucas Peterson
  */
 public class Connection {
-    /** Counter used to give each Connection a unique ID. Starts negative to not interfere with Component/Port IDs */
-    private static int ID_COUNTER = -1;
-
     /** The Color of a Connection Line when it is on */
     private final static Color ON_COLOR = Color.GREEN;
     /** The Color of a Connection Line when it is off */
@@ -94,9 +91,6 @@ public class Connection {
 
         line.setStrokeWidth(LINE_WIDTH);
         line.setStrokeLineCap(LINE_CAP);
-
-        line.setId(String.valueOf(ID_COUNTER));
-        ID_COUNTER--;
 
         // Input Handlers
         // Left-click to remove a connection

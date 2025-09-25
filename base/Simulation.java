@@ -19,7 +19,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /// Things to do:
@@ -27,7 +26,7 @@ import java.util.*;
 /// Initialize Compound interiors w/ same selection abilities
 /// Consolidate the two methods of getting IO counts for Compounds, removing SelectionArea method
 /// Compound update method
-/// Make copy constructor for compound components for multi-level compounds
+/// Clean up base Component classes
 /// Persistence of compounds
 
 /**
@@ -92,55 +91,6 @@ public class Simulation extends Application {
             }
         }
         return null;
-    }
-
-    public static void configurePane(Pane pane, String name) {
-        pane.setUserData(name);
-        List<Node> children = pane.getChildren();
-
-        pane.setPrefWidth(Simulation.INIT_BOARD_WIDTH);
-        pane.setPrefHeight(Simulation.INIT_BOARD_HEIGHT);
-
-        // Multi-selection handling
-        pane.setOnDragDetected(e -> {
-            // Know a multi-select is happening
-            if (selecting) {
-                children.add(selection.getRect());
-            }
-        });
-
-        pane.setOnMousePressed(e -> {
-            // Possible multi-select start, more accurate than waiting for drag detection
-            if (getClickedOn(e) == null && e.getButton() == MouseButton.PRIMARY) {
-                selecting = true;
-                selection.startNew(e.getX(), e.getY());
-            }
-        });
-
-        pane.setOnMouseDragged(e -> {
-            // Expand Selection Area
-            if (selecting) {
-                List<Component> components = Utils.componentsFromChildren(children);
-                selection.expandSelection(e.getX(), e.getY(), components);
-            }
-        });
-
-        pane.setOnMouseReleased(e -> {
-            // Done selecting more elements, remove selection rect
-            if (selecting) {
-                children.remove(selection.getRect());
-                selection.done();
-                selecting = false;
-            }
-        });
-
-        // Set up Component addition/removal processes
-        pane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
-                children.removeAll(Arrays.asList(e.getChildrenToRemove()))
-        );
-        pane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
-                children.addAll(Arrays.asList(e.getChildrenToAdd()))
-        );
     }
 
     /**

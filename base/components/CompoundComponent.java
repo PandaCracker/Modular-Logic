@@ -87,6 +87,10 @@ public class CompoundComponent extends Component {
                 super.remove();
             }
         });
+
+        for (Port port : getAllPorts()) {
+            new Port(this, port.getType(), port.getPortNum());
+        }
     }
 
     /**

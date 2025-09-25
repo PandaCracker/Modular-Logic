@@ -51,9 +51,8 @@ public class Port {
      * @param parent The Component this Port is a part of
      * @param type The type of Port this is, either <i>PortType.INPUT</i> or <i>PortType.OUTPUT</i>
      * @param portNum The (zero-indexed) port number this port will be
-     * @param ID A unique identifier for this port
      */
-    public Port(Component parent, PortType type, int portNum, int ID) {
+    public Port(Component parent, PortType type, int portNum) {
         this.parent = parent;
         this.portNum = portNum;
         this.type = type;
@@ -71,7 +70,6 @@ public class Port {
         double centerX = parent.getRect().getX() + centerXOffsetFromParent;
         this.circle = new Circle(centerX, centerY, RADIUS, COLOR);
 
-        circle.setId(String.valueOf(ID));
         circle.setUserData(this);
 
         // Input Handlers
@@ -145,6 +143,15 @@ public class Port {
      */
     public Component getParent() {
         return parent;
+    }
+
+    /**
+     * Get the PortType of this port
+     * @return This Port's PortType
+     * @see Port.PortType
+     */
+    public PortType getType() {
+        return type;
     }
 
     /**

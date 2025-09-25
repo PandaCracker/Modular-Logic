@@ -21,10 +21,6 @@ import java.util.Arrays;
  * @author Lucas Peterson
  */
 public abstract class Component implements Comparable<Component>{
-
-    /** Counter which gives each Component and/or Port a unique ID */
-    private static int ID_COUNTER = 0;
-
     /** How many pixels wide the rounded portion on the corner of Components is */
     private final static double ROUND_CORNER_WIDTH = 12;
     /** How many pixels tall the rounded portion on the corner of Components is */
@@ -101,9 +97,6 @@ public abstract class Component implements Comparable<Component>{
 
         // Save this Component object in the Rect for referencing on the Pane
         rect.setUserData(this);
-        // Give this rect a unique id
-        rect.setId(String.valueOf(ID_COUNTER));
-        ID_COUNTER++;
 
         // Set up display text
         this.text = new Text();
@@ -133,14 +126,14 @@ public abstract class Component implements Comparable<Component>{
         // Set up I/O Ports
         this.numInputs = numInputs;
         this.inputPorts = new Port[numInputs];
-        for (int i = 0; i < numInputs; i++, ID_COUNTER++) {
-            inputPorts[i] = new Port(this, Port.PortType.INPUT, i, ID_COUNTER);
+        for (int i = 0; i < numInputs; i++) {
+            inputPorts[i] = new Port(this, Port.PortType.INPUT, i);
         }
 
         this.numOutputs = numOutputs;
         this.outputPorts = new Port[numOutputs];
-        for (int i = 0; i < numOutputs; i++, ID_COUNTER++) {
-            outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i, ID_COUNTER);
+        for (int i = 0; i < numOutputs; i++) {
+            outputPorts[i] = new Port(this, Port.PortType.OUTPUT, i);
         }
 
         // Input Handlers

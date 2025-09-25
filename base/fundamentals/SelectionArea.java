@@ -18,33 +18,16 @@ public class SelectionArea {
     public final static Color selectionColor = new Color(0.4, 0.6, 0.9, 0.3);
 
     /** The Rectangle which is represents this SelectionArea on screen */
-    private final Rectangle rect;
+    private final static Rectangle rect = new Rectangle(0, 0, selectionColor);
 
     /** The coordinates of the anchored corner, where the click-drag started */
-    private final double[] anchor;
+    private final static double[] anchor = new double[] {0, 0};
 
     /**
      * An ordered set of all selected Components. Order is top to bottom on the screen,
      * w/ ties broken going left to right
      */
-    private final TreeSet<Component> selected;
-
-    /**
-     * Creates a new SelectionArea
-     */
-    public SelectionArea() {
-        this.rect = new Rectangle(0, 0, selectionColor);
-        rect.setId("selection");
-
-        rect.setX(0);
-        rect.setY(0);
-
-        this.anchor = new double[2];
-        anchor[0] = 0;
-        anchor[1] = 0;
-
-        this.selected = new TreeSet<>();
-    }
+    private final static TreeSet<Component> selected = new TreeSet<>();
 
     /**
      * Getter for this SelectionArea's Rectangle
