@@ -14,16 +14,13 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import javafx.util.StringConverter;
 
 import java.util.*;
 
 /// Things to do:
+/// Fix Compound Creation exceptions
 /// Add input/output ports on interiors of Compounds
-/// Initialize Compound interiors w/ same selection abilities
-/// Consolidate the two methods of getting IO counts for Compounds, removing SelectionArea method
 /// Compound update method
-/// Clean up base Component classes
 /// Persistence of compounds
 
 /**
@@ -55,9 +52,6 @@ public class Simulation extends Application {
     private static DisplayPane currentPane = mainPane;
     /** Top-level layout object all UI and display objects */
     private final static BorderPane window = new BorderPane();
-
-    /** The SelectionArea object handling multi-selection */
-    private final static SelectionArea selection = new SelectionArea();
 
     /** Stack of Pane view history, for back-history jumps */
     private final static Deque<DisplayPane> paneViewStack = new LinkedList<>();
@@ -118,14 +112,14 @@ public class Simulation extends Application {
         createCompoundButton.setTextAlignment(TextAlignment.CENTER);
         createCompoundButton.setOnAction(e -> {
             CompoundComponent.makeCompoundComponent(
-                    selection,
+                    mainPane.getSelection(),
                     widthField.getText(),
                     heightField.getText(),
                     colorPicker.getValue(),
                     nameField.getText(),
                     currentPane);
-            selection.getSelected().forEach(Component::remove);
-            selection.clearSelection();
+            mainPane.getSelection().getSelected().forEach(Component::remove);
+            mainPane.getSelection().clearSelection();
         });
 
         addCompoundComponentUI.getChildren().addAll(
@@ -140,26 +134,21 @@ public class Simulation extends Application {
      * @return The VBox described above
      */
     private static VBox initAddComponentUI() {
-        // TODO maybe a bit overcomplicated
         Button addButton = new Button("Add new ____");
         ChoiceBox<String> componentSelector = new ChoiceBox<>();
-        Class<? extends Component>[] componentClasses = new Class[]
-                {AND.class, OR.class, NOT.class, Light.class, Splitter.class, SignalSource.class};
-
-        StringConverter<Class<? extends Component>> classConverter = new StringConverter<>() {
-            @Override
-            public String toString(Class<? extends Component> object) {
-                return object.getSimpleName();
-            }
-            @Override
-            public Class<? extends Component> fromString(String string) {
-                return Arrays.stream(componentClasses).filter(c -> c.getSimpleName().equals(string))
-                        .findFirst().orElse(null);
-            }
-        };
+        ArrayList<Class<? extends Component>> componentClasses = new ArrayList<>(
+                List.of(AND.class, OR.class, NOT.class, Light.class, Splitter.class, SignalSource.class));
 
         addButton.setOnAction(ae -> {
-            Class<? extends Component> componentToMake = classConverter.fromString(componentSelector.getValue());
+            Class<? extends Component> componentToMake = switch(componentSelector.getValue()) {
+                case "AND" -> AND.class;
+                case "OR" -> OR.class;
+                case "Splitter" -> Splitter.class;
+                case "SignalSource" -> SignalSource.class;
+                case "Light" -> Light.class;
+                case "NOT" -> NOT.class;
+                default -> null;
+            };
             try {
                 componentToMake.getDeclaredConstructor(Double.TYPE, Double.TYPE, DisplayPane.class)
                         .newInstance(NEW_COMPONENT_X, NEW_COMPONENT_Y, currentPane);
@@ -168,7 +157,8 @@ public class Simulation extends Application {
             }
         });
 
-        componentSelector.getItems().addAll(Arrays.stream(componentClasses).map(classConverter::toString).toList());
+        componentSelector.getItems().addAll(componentClasses.stream().map(Class::getSimpleName).toList());
+        componentSelector.setValue("AND");
         componentSelector.setOnAction(e -> {
             String addText = componentSelector.getValue();
             addButton.setText("Add new " + (addText == null ? "____" : addText));

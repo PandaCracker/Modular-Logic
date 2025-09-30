@@ -2,7 +2,6 @@ package base.components;
 
 import base.fundamentals.Component;
 import base.fundamentals.DisplayPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -27,13 +26,6 @@ public class Splitter extends Component {
      */
     public Splitter(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null, displayPane);
-    }
-
-    /**
-     * Create a new Splitter at the top right of the main screen
-     */
-    public Splitter() {
-        this(60, 60, null);
     }
 
     @Override

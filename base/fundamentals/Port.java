@@ -1,7 +1,5 @@
 package base.fundamentals;
 
-import base.events.*;
-import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -115,7 +113,7 @@ public class Port {
             }
         });
 
-        Event.fireEvent(parent.getRect().getParent(), new AddChildrenEvent(circle));
+        parent.getParentPane().addChildren(circle);
 
         this.on = false;
         this.inDrag = false;
@@ -234,7 +232,7 @@ public class Port {
     }
 
     /**
-     * Change the Connection of this Port.
+     * Set the Connection of this Port to the one provided.
      * Does nothing if this Port already has a Connection, or if the Connection provided does not have this Port as
      * either of its endpoints
      * @param connection The Connection to add to this Port.
@@ -286,7 +284,7 @@ public class Port {
      * Remove this Port and its Connection from the display
      */
     public void remove() {
-        Event.fireEvent(circle.getParent(), new DeleteChildrenEvent(circle));
+        parent.getParentPane().removeChildren(circle);
         if (isConnected()) {
             removeConnection();
         }

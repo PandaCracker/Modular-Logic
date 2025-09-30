@@ -2,7 +2,6 @@ package base.components;
 
 import base.fundamentals.Component;
 import base.fundamentals.DisplayPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -31,13 +30,6 @@ public class AND extends Component {
      */
     public AND(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR, displayPane);
-    }
-
-    /**
-     * Create a new AND at the top right corner of the main screen
-     */
-    public AND() {
-        this(60, 60, null);
     }
 
     @Override

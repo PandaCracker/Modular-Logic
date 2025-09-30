@@ -1,13 +1,9 @@
 package base.fundamentals;
 
-import base.Simulation;
 import base.components.CompoundComponent;
-import base.events.*;
-import javafx.event.Event;
 import javafx.geometry.Bounds;
 import javafx.geometry.VPos;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -40,7 +36,8 @@ public abstract class Component implements Comparable<Component>{
 
     /** Rectangle object which holds all display and location info */
     private final Rectangle rect;
-
+    /** The Display Pane this Component lives on */
+    private final DisplayPane parentPane;
 
     /** Number of input Ports on this Component */
     private final int numInputs;
@@ -98,6 +95,8 @@ public abstract class Component implements Comparable<Component>{
         // Save this Component object in the Rect for referencing on the Pane
         rect.setUserData(this);
 
+        this.parentPane = displayPane;
+
         // Set up display text
         this.text = new Text();
         text.setFont(DEFAULT_FONT);
@@ -118,10 +117,7 @@ public abstract class Component implements Comparable<Component>{
         this.selector = null;
         this.canEcho = true;
 
-        // Add this to the screen
-        Event.fireEvent(
-                displayPane == null ? Simulation.getMainPane().getPane() : displayPane.getPane(),
-                new AddChildrenEvent(rect, text));
+        displayPane.addChildren(rect, text);
 
         // Set up I/O Ports
         this.numInputs = numInputs;
@@ -186,6 +182,14 @@ public abstract class Component implements Comparable<Component>{
      */
     public Rectangle getRect() {
         return rect;
+    }
+
+    /**
+     * Get the Display Pane this Component lives on
+     * @return The Display Pane this Component lives on
+     */
+    public DisplayPane getParentPane() {
+        return parentPane;
     }
 
     /**
@@ -299,7 +303,7 @@ public abstract class Component implements Comparable<Component>{
      */
     public void remove() {
         if (rect.getParent() != null) {
-            Event.fireEvent(rect.getParent(), new DeleteChildrenEvent(rect, text));
+            parentPane.removeChildren(rect, text);
             for (Port port : getAllPorts()) {
                 port.remove();
             }
@@ -357,16 +361,6 @@ public abstract class Component implements Comparable<Component>{
                 System.out.println("Exception during copying process: " + e.getClass() + " " + e.getLocalizedMessage());
             }
         }
-    }
-
-    /**
-     * Connect this Component to the other Component
-     * @param other The Component to connect to
-     * @param srcPort The Port to connect from on this Component
-     * @param dstPort The Port to connect to on the other Component
-     */
-    public void connectTo(Component other, int srcPort, int dstPort) {
-        outputPorts[srcPort].connectTo(other, dstPort);
     }
 
     /**

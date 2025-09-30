@@ -46,34 +46,6 @@ public class SelectionArea {
     }
 
     /**
-     * Get the required number of inputs and outputs for the selected Components to fully function
-     * <br>
-     * The number of inputs is the number of non-connected input ports plus the number of signal sources. <br>
-     * The number of outputs is the number of non-connected output ports. <br>
-     * "Non-connected" here means any connection whose endpoint is either non-existent or on a Component not
-     * currently selected.
-     * @return An integer array of length two, [numInputs, numOutputs]
-     */
-    public int[] getSelectedDependencies() {
-        int numInputs = 0, numOutputs = 0;
-        for (Component component : selected) {
-            for (Port port : component.getAllPorts()) {
-                Component connectedComponent = port.getConnectedComponent();
-                boolean portNotConnected = connectedComponent == null;
-                boolean portConnectedOutsideSelection = !portNotConnected && !selected.contains(connectedComponent);
-                if (portNotConnected || portConnectedOutsideSelection) {
-                    if (port.isInput()) {
-                        numInputs++;
-                    } else {
-                        numOutputs++;
-                    }
-                }
-            }
-        }
-        return new int[] {numInputs, numOutputs};
-    }
-
-    /**
      * Moves the free corner to a specified position
      * @param x The x coordinate of the free corner
      * @param y The y coordinate of the free corner

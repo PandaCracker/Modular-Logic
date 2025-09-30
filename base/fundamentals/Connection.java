@@ -1,7 +1,5 @@
 package base.fundamentals;
 
-import base.events.*;
-import javafx.event.Event;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -100,7 +98,7 @@ public class Connection {
             }
         });
 
-        Event.fireEvent((complete ? sourcePort : anchorPort).getCircle().getParent(), new AddChildrenEvent(line));
+        (complete ? sourcePort : anchorPort).getParent().getParentPane().addChildren(line);
     }
 
     /**
@@ -132,7 +130,7 @@ public class Connection {
      */
     public void remove() {
         // Remove the connection from the main display Pane
-        Event.fireEvent(line.getParent(), new DeleteChildrenEvent(line));
+        (complete ? sourcePort : anchorPort).getParent().getParentPane().removeChildren(line);
         if(sourcePort != null) {sourcePort.deregisterConnection();}
         if(destPort != null) {destPort.deregisterConnection();}
     }

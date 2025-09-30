@@ -2,8 +2,6 @@ package base.fundamentals;
 
 import base.Simulation;
 import base.Utils;
-import base.events.AddChildrenEvent;
-import base.events.DeleteChildrenEvent;
 import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -13,11 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DisplayPane {
-    private Pane pane;
-    private String name;
-    private SelectionArea selection;
+    private final Pane pane;
+    private final String name;
+    private final SelectionArea selection;
     private boolean selecting;
-    private List<Node> children;
+    private final List<Node> children;
 
     public DisplayPane(String name) {
         this.pane = new Pane();
@@ -67,14 +65,6 @@ public class DisplayPane {
                 selecting = false;
             }
         });
-
-        // Set up Component addition/removal processes
-        pane.addEventHandler(DeleteChildrenEvent.EVENT_TYPE, e ->
-                children.removeAll(Arrays.asList(e.getChildrenToRemove()))
-        );
-        pane.addEventHandler(AddChildrenEvent.EVENT_TYPE, e ->
-                children.addAll(Arrays.asList(e.getChildrenToAdd()))
-        );
     }
 
     /**
@@ -102,11 +92,28 @@ public class DisplayPane {
     }
 
     /**
-     * Get whether this Display Pane has a selection in progress
-     * @return Whether this Display Pane has an active Selection Area
+     * Retrieve this Display Pane's Selection Area object
+     * @return This Display Pane's Selection Area
      */
-    public boolean isSelecting() {
-        return selecting;
+    public SelectionArea getSelection() {
+        return selection;
+    }
+
+    /**
+     * Add children from this display
+     * @param childrenToAdd An array of the Children Nodes to be removed
+     */
+    public void addChildren(Node ... childrenToAdd) {
+        children.addAll(Arrays.asList(childrenToAdd));
+    }
+
+    /**
+     * Remove children from this display. <br>
+     * Children in the provided array which are not on this Display Pane will be ignored
+     * @param childrenToRemove An array of the Children Nodes to be removed
+     */
+    public void removeChildren(Node ... childrenToRemove) {
+        children.removeAll(Arrays.asList(childrenToRemove));
     }
 
     /**

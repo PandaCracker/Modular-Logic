@@ -2,7 +2,6 @@ package base.components;
 
 import base.fundamentals.Component;
 import base.fundamentals.DisplayPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -31,13 +30,6 @@ public class OR extends Component {
      */
     public OR(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR, displayPane);
-    }
-
-    /**
-     * Create a new OR at the top right of the main screen
-     */
-    public OR() {
-        this(60,60, null);
     }
 
     @Override

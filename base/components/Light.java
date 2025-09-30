@@ -2,7 +2,6 @@ package base.components;
 
 import base.fundamentals.Component;
 import base.fundamentals.DisplayPane;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -38,13 +37,6 @@ public class Light extends Component {
      */
     public Light(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0, OFF_TEXT, OFF_TEXT_COLOR, displayPane);
-    }
-
-    /**
-     * Create a new Light at the top-right corner of the main screen
-     */
-    public Light() {
-        this(60, 60, null);
     }
 
     @Override

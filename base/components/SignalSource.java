@@ -3,7 +3,6 @@ package base.components;
 import base.fundamentals.Component;
 import base.fundamentals.DisplayPane;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
@@ -44,13 +43,6 @@ public class SignalSource extends Component {
         this.on = false;
 
         getRect().setOnMouseClicked(this::toggle);
-    }
-
-    /**
-     * Create a new SignalSource at the top right of the main screen
-     */
-    public SignalSource() {
-        this(60,60, null);
     }
 
     /**

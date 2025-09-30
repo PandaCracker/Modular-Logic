@@ -4,7 +4,6 @@ import base.Simulation;
 import base.Utils;
 import base.fundamentals.*;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 import java.util.*;
@@ -36,7 +35,6 @@ public class CompoundComponent extends Component {
 
     /**
      * Create a new CompoundComponent
-     * @param selection The Selection Area which holds the Components making up the CompoundComponent
      * @param x The x coordinate (in cells) of the CompoundComponent
      * @param y The y coordinate (in cells) of the CompoundComponent
      * @param width The width of the CompoundComponent
@@ -46,12 +44,13 @@ public class CompoundComponent extends Component {
      * @param numOutputs The number of output Port on the CompoundComponent
      * @param name The name displayed on the CompoundComponent
      * @param displayPane The Pane on which this CompoundComponent lives
+     * @param internalDisplayPane The Internal Display Pane which shows the interior of the Compound Component
      */
-    private CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
-                              Color color, int numInputs, int numOutputs, String name, DisplayPane displayPane) {
+    private CompoundComponent(double x, double y, double width, double height, Color color, int numInputs,
+                              int numOutputs, String name, DisplayPane displayPane, DisplayPane internalDisplayPane) {
         super(x, y, width, height, color, numInputs, numOutputs, name, DEFAULT_TEXT_COLOR, displayPane);
-        this.internalDisplayPane = new DisplayPane(name + " View");
-        init(selection.getSelected());
+        this.internalDisplayPane = internalDisplayPane;
+        init();
     }
 
     /**
@@ -62,19 +61,19 @@ public class CompoundComponent extends Component {
         super(other.getRect().getX(), other.getRect().getY(), other.getRect().getWidth(), other.getRect().getHeight(),
                 other.getRect().getFill(), other.getNumInputs(), other.getNumOutputs(), other.getText().getText(),
                 DEFAULT_TEXT_COLOR, (DisplayPane) (other.getRect().getParent().getUserData()));
+
+        // Set up, copy over, and connect the internal Display Pane and its Components
         this.internalDisplayPane = new DisplayPane(other.getText().getText() + " View");
-        init(Utils.componentsFromChildren(other.internalDisplayPane.getChildren()));
+        List<Component> originals = Utils.componentsFromChildren(other.internalDisplayPane.getChildren());
+        originals.forEach(c -> c.copy(internalDisplayPane));
+        connectComponents(originals, Utils.componentsFromChildren(internalDisplayPane.getChildren()));
+        init();
     }
 
     /**
      * Copy and connect the internals of a new Compound Components from the collection of Components which make it up
-     * @param internals A Collection of Components which make up the internals of this Compound Component
      */
-    private void init(Collection<Component> internals) {
-        // Add Components to internal display
-        internals.forEach(c -> c.copy(internalDisplayPane));
-        connectComponents(internals);
-
+    private void init() {
         // Double-click detection to change view to internal display
         this.lastClickTime = 0;
         getRect().setOnMousePressed(e -> {
@@ -103,12 +102,18 @@ public class CompoundComponent extends Component {
                                                    Color color, String name, DisplayPane displayPane) {
         double width = widthStr.isBlank() ? DEFAULT_WIDTH : Double.parseDouble(widthStr);
         double height = heightStr.isBlank() ? DEFAULT_HEIGHT : Double.parseDouble(heightStr);
-        int[] IOCounts = selection.getSelectedDependencies();
         name = name.isBlank() ? DEFAULT_TEXT : name;
+
+        DisplayPane internalDisplayPane = new DisplayPane(name + " View");
+        selection.getSelected().forEach(c -> c.copy(internalDisplayPane));
+
+        int[] IOCounts = connectComponents(selection.getSelected(),
+                Utils.componentsFromChildren(internalDisplayPane.getChildren()));
 
         boolean containsSomething = !selection.getSelected().isEmpty();
         if (containsSomething) {
-            new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane);
+            new CompoundComponent(1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane,
+                    internalDisplayPane);
         }
     }
 
@@ -133,7 +138,7 @@ public class CompoundComponent extends Component {
      * @param dupeToReturn The Component which will act as a key to compare against
      * @return The first Component found which is equivalent to the key Component provided, or null if no match is found
      */
-    private Component findIn(Collection<Component> collection, Component dupeToReturn) {
+    private static Component findIn(Collection<Component> collection, Component dupeToReturn) {
         return collection.stream().filter(c -> c.equals(dupeToReturn)).findFirst().orElse(null);
     }
 
@@ -144,9 +149,8 @@ public class CompoundComponent extends Component {
      *      input Ports once all original connections have been carried over, and index 1 being the same for
      *      the number destinations needed to cover unconnected output Ports.
      */
-    private int[] connectComponents(Collection<Component> originals) {
+    private static int[] connectComponents(Collection<Component> originals, Collection<Component> copies) {
         int[] IOPortsNeeded = new int[] {0,0};
-        List<Component> copies = Utils.componentsFromChildren(internalDisplayPane.getChildren());
         // For every component in the current display pane
         for (Component copy : copies) {
             // If it is also in the original set (copies should have the same hash)
@@ -168,7 +172,7 @@ public class CompoundComponent extends Component {
                     } else {
                         // Otherwise, the Port was connected from outside or not at all. Either way, it needs somewhere
                         // to go. Input Ports need a source, output Ports need a destination
-                        IOPortsNeeded[originalPort.isInput() ? 1 : 0]++;
+                        IOPortsNeeded[originalPort.isInput() ? 0 : 1]++;
                     }
                 }
             }
