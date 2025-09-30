@@ -27,7 +27,7 @@ public class CompoundComponent extends Component {
     private final static Color DEFAULT_TEXT_COLOR = Color.WHITE;
 
     /** Unique Pane on which the contents of this CompoundComponent are displayed */
-    private final Pane internalDisplayPane;
+    private final DisplayPane internalDisplayPane;
 
     /** Threshold beyond which successive clicks are no longer considered a double click (in milliseconds) */
     private final static int DOUBLE_CLICK_DELAY = 500;
@@ -48,9 +48,9 @@ public class CompoundComponent extends Component {
      * @param displayPane The Pane on which this CompoundComponent lives
      */
     private CompoundComponent(SelectionArea selection, double x, double y, double width, double height,
-                              Color color, int numInputs, int numOutputs, String name, Pane displayPane) {
+                              Color color, int numInputs, int numOutputs, String name, DisplayPane displayPane) {
         super(x, y, width, height, color, numInputs, numOutputs, name, DEFAULT_TEXT_COLOR, displayPane);
-        this.internalDisplayPane = new Pane();
+        this.internalDisplayPane = new DisplayPane(name + " View");
         init(selection.getSelected());
     }
 
@@ -61,8 +61,8 @@ public class CompoundComponent extends Component {
     public CompoundComponent(CompoundComponent other) {
         super(other.getRect().getX(), other.getRect().getY(), other.getRect().getWidth(), other.getRect().getHeight(),
                 other.getRect().getFill(), other.getNumInputs(), other.getNumOutputs(), other.getText().getText(),
-                DEFAULT_TEXT_COLOR, (Pane) other.getRect().getParent());
-        this.internalDisplayPane = new Pane();
+                DEFAULT_TEXT_COLOR, (DisplayPane) (other.getRect().getParent().getUserData()));
+        this.internalDisplayPane = new DisplayPane(other.getText().getText() + " View");
         init(Utils.componentsFromChildren(other.internalDisplayPane.getChildren()));
     }
 
@@ -71,9 +71,6 @@ public class CompoundComponent extends Component {
      * @param internals A Collection of Components which make up the internals of this Compound Component
      */
     private void init(Collection<Component> internals) {
-        // Create 'internal world' of Components
-        Simulation.configurePane(internalDisplayPane, getText().getText());
-
         // Add Components to internal display
         internals.forEach(c -> c.copy(internalDisplayPane));
         connectComponents(internals);
@@ -103,13 +100,16 @@ public class CompoundComponent extends Component {
      * @param displayPane The Pane currently being viewed
      */
     public static void makeCompoundComponent(SelectionArea selection, String widthStr, String heightStr,
-                                                   Color color, String name, Pane displayPane) {
+                                                   Color color, String name, DisplayPane displayPane) {
         double width = widthStr.isBlank() ? DEFAULT_WIDTH : Double.parseDouble(widthStr);
         double height = heightStr.isBlank() ? DEFAULT_HEIGHT : Double.parseDouble(heightStr);
         int[] IOCounts = selection.getSelectedDependencies();
         name = name.isBlank() ? DEFAULT_TEXT : name;
 
-        new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane);
+        boolean containsSomething = !selection.getSelected().isEmpty();
+        if (containsSomething) {
+            new CompoundComponent(selection, 1, 1, width, height, color, IOCounts[0], IOCounts[1], name, displayPane);
+        }
     }
 
     /**

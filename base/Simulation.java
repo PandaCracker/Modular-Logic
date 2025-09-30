@@ -1,7 +1,6 @@
 package base;
 
 import base.components.*;
-import base.events.*;
 import base.fundamentals.*;
 
 import javafx.application.Application;
@@ -10,8 +9,6 @@ import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
@@ -53,52 +50,31 @@ public class Simulation extends Application {
     public final static int FRAME_DELAY_MS = 33;
 
     /** Main top-level display Pane */
-    private final static Pane mainPane = new Pane();
+    private final static DisplayPane mainPane = new DisplayPane("Main View");
     /** Current display Pane being viewed */
-    private static Pane currentPane = mainPane;
+    private static DisplayPane currentPane = mainPane;
     /** Top-level layout object all UI and display objects */
     private final static BorderPane window = new BorderPane();
 
-    /** Whether there is a multi-selection action taking place */
-    private static boolean selecting;
     /** The SelectionArea object handling multi-selection */
     private final static SelectionArea selection = new SelectionArea();
 
     /** Stack of Pane view history, for back-history jumps */
-    private final static Deque<Pane> paneViewStack = new LinkedList<>();
+    private final static Deque<DisplayPane> paneViewStack = new LinkedList<>();
 
 
     /**
      * Get the main-level display pane used by the Simulation Class
      * @return The top level Pane object
      */
-    public static Pane getMainPane() {
+    public static DisplayPane getMainPane() {
         return mainPane;
-    }
-
-    /**
-     * Get the Object clicked on by a MouseEvent, if any.
-     * @param me The MouseEvent in question. Assumed to be targeted at the displayPane
-     * @return The Object, if any, on the display pane which was clicked on
-     */
-    private static Object getClickedOn(MouseEvent me) {
-        List<Node> children = currentPane.getChildren();
-        if (currentPane.contains(me.getX(), me.getY())) {
-            for (Node node : children) {
-                if (node.getLayoutBounds().contains(me.getX(), me.getY())) {
-                    return node.getUserData();
-                }
-            }
-        }
-        return null;
     }
 
     /**
      * Initializes everything related to the main display window
      */
     private static void initMainDisplay() {
-        configurePane(mainPane, "Main View");
-
         // Set up logic update loop
         final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(FRAME_DELAY_MS),
             e -> Utils.componentsFromChildren(mainPane.getChildren()).forEach(Component::update)
@@ -149,6 +125,7 @@ public class Simulation extends Application {
                     nameField.getText(),
                     currentPane);
             selection.getSelected().forEach(Component::remove);
+            selection.clearSelection();
         });
 
         addCompoundComponentUI.getChildren().addAll(
@@ -184,7 +161,7 @@ public class Simulation extends Application {
         addButton.setOnAction(ae -> {
             Class<? extends Component> componentToMake = classConverter.fromString(componentSelector.getValue());
             try {
-                componentToMake.getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
+                componentToMake.getDeclaredConstructor(Double.TYPE, Double.TYPE, DisplayPane.class)
                         .newInstance(NEW_COMPONENT_X, NEW_COMPONENT_Y, currentPane);
             } catch (Exception e) {
                 System.out.println("Basic Component Creation " + e.getClass() + ": " + e.getLocalizedMessage());
@@ -206,7 +183,7 @@ public class Simulation extends Application {
     /**
      * Changes the view displayed on the window, saving the previous view in the view history
      */
-    public static void setCenterPane(Pane paneToView) {
+    public static void setCenterPane(DisplayPane paneToView) {
         try {
             // Save previous view
             paneViewStack.push(currentPane);
@@ -233,9 +210,9 @@ public class Simulation extends Application {
      * Updates the UI to reflect the value of currentPane
      */
     private static void updateCurrentPane() {
-        window.setCenter(currentPane);
+        window.setCenter(currentPane.getPane());
         Label viewLabel = (Label) window.lookup("#viewLabel");
-        viewLabel.setText("Current View: " + currentPane.getUserData());
+        viewLabel.setText("Current View: " + currentPane.getName());
     }
 
     /**
@@ -288,7 +265,7 @@ public class Simulation extends Application {
         initMainDisplay();
         VBox addUI = initUI();
 
-        window.setCenter(mainPane);
+        window.setCenter(mainPane.getPane());
         window.setLeft(addUI);
 
         Scene scene = new Scene(window);

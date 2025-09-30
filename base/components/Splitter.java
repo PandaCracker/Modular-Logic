@@ -1,6 +1,7 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.DisplayPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -24,7 +25,7 @@ public class Splitter extends Component {
      * @param y The y coordinate (in pixels) of the new Splitter
      * @param displayPane The Pane to display this Splitter on
      */
-    public Splitter(double x, double y, Pane displayPane) {
+    public Splitter(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 1, 2, null, null, displayPane);
     }
 

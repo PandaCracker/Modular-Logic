@@ -80,7 +80,7 @@ public abstract class Component implements Comparable<Component>{
      * @param displayPane The Pane on which to add the Component
      */
     public Component(double x, double y, double width, double height, Paint color, int numInputs, int numOutputs,
-                     String defaultText, Color defaultTextColor, Pane displayPane) {
+                     String defaultText, Color defaultTextColor, DisplayPane displayPane) {
         // Set up basic Rectangle fields
         this.rect = new Rectangle(width, height);
         rect.setX(x);
@@ -120,7 +120,7 @@ public abstract class Component implements Comparable<Component>{
 
         // Add this to the screen
         Event.fireEvent(
-                displayPane == null ? Simulation.getMainPane() : displayPane,
+                displayPane == null ? Simulation.getMainPane().getPane() : displayPane.getPane(),
                 new AddChildrenEvent(rect, text));
 
         // Set up I/O Ports
@@ -345,13 +345,13 @@ public abstract class Component implements Comparable<Component>{
      * Creates a deep copy of this Component, adding it to the specified screen
      * @param displayPane The Pane to add this new Component to
      */
-    public void copy(Pane displayPane) {
+    public void copy(DisplayPane displayPane) {
         Rectangle rect = getRect();
         if (getClass() == CompoundComponent.class) {
             new CompoundComponent((CompoundComponent) this);
         } else {
             try {
-                getClass().getDeclaredConstructor(Double.TYPE, Double.TYPE, Pane.class)
+                getClass().getDeclaredConstructor(Double.TYPE, Double.TYPE, DisplayPane.class)
                         .newInstance(rect.getX(), rect.getY(), displayPane);
             } catch (Exception e) {
                 System.out.println("Exception during copying process: " + e.getClass() + " " + e.getLocalizedMessage());

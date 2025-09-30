@@ -119,8 +119,6 @@ public class SelectionArea {
      * @param anchorY The y coordinate of the anchored corner
      */
     public void startNew(double anchorX, double anchorY) {
-        selected.forEach(Component::deselect);
-        selected.clear();
         anchor[0] = anchorX;
         anchor[1] = anchorY;
     }
@@ -145,8 +143,16 @@ public class SelectionArea {
     /**
      * Clear the SelectionArea from the screen once the MouseDrag is complete
      */
-    public void done() {
+    public void doneSelecting() {
         rect.setHeight(0);
         rect.setWidth(0);
+    }
+
+    /**
+     * Remove all selected objects from the selected set
+     */
+    public void clearSelection() {
+        selected.forEach(Component::deselect);
+        selected.clear();
     }
 }

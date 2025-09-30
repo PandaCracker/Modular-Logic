@@ -1,6 +1,7 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.DisplayPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -28,7 +29,7 @@ public class AND extends Component {
      * @param y The y coordinate (in pixels) of the new AND
      * @param displayPane The pane to display this AND on
      */
-    public AND(double x, double y, Pane displayPane) {
+    public AND(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 2, 1, TEXT, TEXT_COLOR, displayPane);
     }
 

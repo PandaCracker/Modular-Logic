@@ -1,6 +1,7 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.DisplayPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -35,7 +36,7 @@ public class Light extends Component {
      * @param y The y coordinate (in pixels) of the new light
      * @param displayPane The Pane on which to display the Light
      */
-    public Light(double x, double y, Pane displayPane) {
+    public Light(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, OFF_COLOR, 1, 0, OFF_TEXT, OFF_TEXT_COLOR, displayPane);
     }
 

@@ -1,6 +1,7 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.DisplayPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
@@ -26,7 +27,7 @@ public class NOT extends Component {
      * @param y The y coordinate (in pixels) of the NOT
      * @param displayPane The pane to display this AND on
      */
-    public NOT(double x, double y, Pane displayPane) {
+    public NOT(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, COLOR, 1, 1, TEXT, TEXT_COLOR, displayPane);
     }
 

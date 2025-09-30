@@ -1,6 +1,7 @@
 package base.components;
 
 import base.fundamentals.Component;
+import base.fundamentals.DisplayPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -38,7 +39,7 @@ public class SignalSource extends Component {
      * @param y The y position (in pixels) of the new Signal Source
      * @param displayPane the Pane to display this Signal Source on
      */
-    public SignalSource(double x, double y, Pane displayPane) {
+    public SignalSource(double x, double y, DisplayPane displayPane) {
         super(x, y, WIDTH, HEIGHT, OFF_COLOR, 0, 1, OFF_TEXT, OFF_TEXT_COLOR, displayPane);
         this.on = false;
 
